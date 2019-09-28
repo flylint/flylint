@@ -29,6 +29,17 @@
 
 ;;; Code:
 
+(defgroup flylint nil
+  "Asynchronous on-the-fly inspection."
+  :prefix "flylint-"
+  :group 'tools
+  :link '(url-link :tag "Github" "https://github.com/flylint/flylint"))
+
+(defgroup flylint-faces nil
+  "Faces used by on-the-fly syntax checking."
+  :prefix "flylint-"
+  :group 'flylint)
+
 ;;;###autoload
 (define-minor-mode flylint-mode
   "Minor mode for asynchronous on-the-fly inspection."
