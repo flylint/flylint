@@ -128,8 +128,34 @@
 
 ;;; Options
 
+(defvar flylint-command-map
+  (let ((map (make-sparse-keymap)))
+    map)
+  "Keymap of Flylint interactive commands.")
+
+(defcustom flylint-keymap-prefix (kbd "C-c /")
+  "Prefix for key bindings of Flylint."
+  :group 'flylint
+  :type 'string
+  :set (lambda (variable key)
+         (when (and (boundp variable) (boundp 'flylint-mode-map))
+           (define-key flylint-mode-map (symbol-value variable) nil)
+           (define-key flylint-mode-map key flylint-command-map))
+         (set-default variable key)))
+
+(defcustom flylint-mode-line-prefix "FlyC"
+  "Base mode line lighter for Flylint."
+  :group 'flylint
+  :type 'string
+  :package-version '(flylint . "26"))
+
 
 ;;; Functions
+
+(defun flylint--mode-line-status-text ()
+  "Get a text describing status for use in the mode line."
+  (let ((errc 0) (warnc 0))
+    (format " %s:%s/%s" flylint-mode-line-prefix errc warnc)))
 
 
 ;;; Main
@@ -137,7 +163,8 @@
 ;;;###autoload
 (define-minor-mode flylint-mode
   "Minor mode for asynchronous on-the-fly inspection."
-  )
+  :keymap flylint-command-map
+  :lighter (:eval (flylint--mode-line-status-text)))
 
 (provide 'flylint)
 ;;; flylint.el ends here
