@@ -44,6 +44,87 @@
 
 ;;; Faces
 
+(defface flylint-error-face '((((supports :underline (:style wave)))
+                                :underline (:style wave :color "Red"))
+                               (t
+                                :underline t :inherit error))
+  "Flylint face for errors."
+  :group 'flylint-faces)
+
+(defface flylint-warning-face '((((supports :underline (:style wave)))
+                                  :underline (:style wave :color "DarkOrange"))
+                                 (t
+                                  :underline t :inherit warning))
+  "Flylint face for warnings."
+  :group 'flylint-faces)
+
+(defface flylint-info-face '((((supports :underline (:style wave)))
+                               :underline (:style wave :color "ForestGreen"))
+                              (t
+                               :underline t :inherit success))
+  "Flylint face for informational messages."
+  :group 'flylint-faces)
+
+(defface flylint-fringe-error-face '((t :inherit error))
+  "Flylint face for fringe error indicators."
+  :group 'flylint-faces)
+
+(defface flylint-fringe-warning-face '((t :inherit warning))
+  "Flylint face for fringe warning indicators."
+  :group 'flylint-faces)
+
+(defface flylint-fringe-info-face '((t :inherit success))
+  "Flylint face for fringe info indicators."
+  :group 'flylint-faces)
+
+(defface flylint-error-list-error-face '((t :inherit error))
+  "Flylint face for error messages in the error list."
+  :group 'flylint-faces)
+
+(defface flylint-error-list-warning-face '((t :inherit warning))
+  "Flylint face for warning messages in the error list."
+  :group 'flylint-faces)
+
+(defface flylint-error-list-info-face '((t :inherit success))
+  "Flylint face for info messages in the error list."
+  :group 'flylint-faces)
+
+(defface flylint-error-list-line-number-face
+  '((t :inherit font-lock-constant-face))
+  "Face for line numbers in the error list."
+  :group 'flylint-faces)
+
+(defface flylint-error-list-column-number-face
+  '((t :inherit font-lock-constant-face))
+  "Face for line numbers in the error list."
+  :group 'flylint-faces)
+
+(defface flylint-error-list-filename-face
+  '((t :inherit font-lock-variable-name-face))
+  "Face for filenames in the error list."
+  :group 'flylint-faces)
+
+(defface flylint-error-list-id-face
+  '((t :inherit font-lock-type-face))
+  "Face for the error ID in the error list."
+  :group 'flylint-faces)
+
+(defface flylint-error-list-id-with-explainer-face
+  '((t :inherit flylint-error-list-id
+       :box (:style released-button)))
+  "Face for the error ID in the error list, for errors that have an explainer."
+  :group 'flylint-faces)
+
+(defface flylint-error-list-checker-name-face
+  '((t :inherit font-lock-function-name-face))
+  "Face for the syntax checker name in the error list."
+  :group 'flylint-faces)
+
+(defface flylint-error-list-highlight-face
+  '((t :inherit highlight))
+  "Flylint face to highlight errors in the error list."
+  :group 'flylint-faces)
+
 
 ;;; Options
 
