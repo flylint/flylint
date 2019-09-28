@@ -1,1 +1,65 @@
-* Flylint
+#+author: conao3
+#+date: <2018-10-25 Thu>
+
+[[https://github.com/conao3/flylint.el][https://raw.githubusercontent.com/conao3/files/master/blob/headers/png/flylint.el.png]]
+[[https://github.com/conao3/flylint.el/blob/master/LICENSE][https://img.shields.io/github/license/conao3/flylint.el.svg?style=flat-square]]
+[[https://github.com/conao3/flylint.el/releases][https://img.shields.io/github/tag/conao3/flylint.el.svg?style=flat-square]]
+[[https://travis-ci.org/conao3/flylint.el][https://img.shields.io/travis/conao3/flylint.el/master.svg?style=flat-square]]
+[[https://app.codacy.com/project/conao3/flylint.el/dashboard][https://img.shields.io/codacy/grade/3ad51a9fc08e48f98b6eb75f8571f0b0.svg?logo=codacy&style=flat-square]]
+[[https://twitter.com/conao_3][https://img.shields.io/badge/twitter-@conao__3-blue.svg?logo=twitter&style=flat-square]]
+[[https://conao3-support.slack.com/join/shared_invite/enQtNjUzMDMxODcyMjE1LWUwMjhiNTU3Yjk3ODIwNzAxMTgwOTkxNmJiN2M4OTZkMWY0NjI4ZTg4MTVlNzcwNDY2ZjVjYmRiZmJjZDU4MDE][https://img.shields.io/badge/chat-on_slack-blue.svg?logo=slack&style=flat-square]]
+
+* Table of Contents
+- [[#description][Description]]
+- [[#install][Install]]
+- [[#usage][Usage]]
+- [[#customize][Customize]]
+- [[#syntaxes][Syntaxes]]
+- [[#information][Information]]
+  - [[#donation][Donation]]
+  - [[#community][Community]]
+  - [[#contribution][Contribution]]
+  - [[#migration][Migration]]
+  - [[#license][License]]
+  - [[#author][Author]]
+  - [[#contributors][Contributors]]
+  - [[#special-thanks][Special Thanks]]
+
+* Description
+
+* Install
+
+* Usage
+
+* Customize
+
+* Information
+** Donation
+I love OSS and I am dreaming of working on it as *full-time* job.
+
+*With your support*, I will be able to spend more time at OSS!
+
+[[https://www.patreon.com/conao3][https://c5.patreon.com/external/logo/become_a_patron_button.png]]
+
+** Community
+All feedback and suggestions are welcome!
+
+You can use github issues, but you can also use [[https://conao3-support.slack.com/join/shared_invite/enQtNjUzMDMxODcyMjE1LWUwMjhiNTU3Yjk3ODIwNzAxMTgwOTkxNmJiN2M4OTZkMWY0NjI4ZTg4MTVlNzcwNDY2ZjVjYmRiZmJjZDU4MDE][Slack]]
+if you want a more casual conversation.
+
+** Contribution
+We welcome PR!
+** Migration
+
+** License
+#+begin_example
+  General Public License Version 3 (AGPLv3)
+  Copyright (c) Naoya Yamashita, USAMI Kenta
+  https://github.com/flylint/flylint/blob/master/LICENSE
+#+end_example
+
+** Author
+- Naoya Yamashita ([[https://github.com/conao3][conao3]])
+- USAMI Kenta ([[https://github.com/zonuexe][zonuexe]])
+
+** Contributors
