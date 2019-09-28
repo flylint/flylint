@@ -27,6 +27,7 @@
 
 ;; Flylint is alternative of Flymake and Flycheck.
 
+
 ;;; Code:
 
 (defgroup flylint nil
@@ -39,6 +40,18 @@
   "Faces used by on-the-fly syntax checking."
   :prefix "flylint-"
   :group 'flylint)
+
+
+;;; Faces
+
+
+;;; Options
+
+
+;;; Functions
+
+
+;;; Main
 
 ;;;###autoload
 (define-minor-mode flylint-mode
