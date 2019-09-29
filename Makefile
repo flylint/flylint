@@ -28,7 +28,7 @@ UBUNTU_EMACS := 23.4 24.1 24.5 25.1
 ALPINE_EMACS := 25.3 26.1 26.2
 DOCKER_EMACS := $(UBUNTU_EMACS:%=ubuntu-min-%) $(ALPINE_EMACS:%=alpine-min-%)
 
-DEPENDS      :=
+DEPENDS      := seml-mode
 
 EMACS        ?= emacs
 BATCH        := $(EMACS) -Q --batch -L $(TOP) $(DEPENDS:%=-L ./%/)
@@ -110,7 +110,7 @@ clean:
 #  depend files
 #
 
-# leaf:
-# 	curl -L https://github.com/conao3/leaf.el/archive/master.tar.gz > $@.tar.gz
-# 	mkdir $@ && tar xf $@.tar.gz -C $@ --strip-components 1
-# 	rm -rf $@.tar.gz
+seml-mode:
+	curl -L https://github.com/conao3/seml-mode.el/archive/master.tar.gz > $@.tar.gz
+	mkdir $@ && tar xf $@.tar.gz -C $@ --strip-components 1
+	rm -rf $@.tar.gz
