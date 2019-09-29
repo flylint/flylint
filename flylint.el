@@ -198,6 +198,25 @@ Slots:
      Recommend corrections (list of `flylint-correction')."
   line column level message checker category group filename buffer corrections)
 
+(cl-defstruct (flylint-correction
+               (:constructor nil)
+               (:constructor flylint-correction-new
+                             (beg end replace &key (buffer (current-buffer)))))
+  "Structure representing a recommended correction.
+Slots:
+`beg'
+     The beggining of replacement as point object.
+
+`end'
+     The end of replacement as point object.
+
+`replace'
+     Replace string as string.
+
+`buffer'
+     Target buffer as buffer object."
+  beg end replace buffer)
+
 
 ;;; Functions
 
