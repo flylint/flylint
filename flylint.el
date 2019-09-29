@@ -136,7 +136,7 @@
 (defcustom flylint-keymap-prefix (kbd "C-c /")
   "Prefix for key bindings of Flylint."
   :group 'flylint
-  :type 'string
+  :type 'key-sequence
   :set (lambda (variable key)
          (when (and (boundp variable) (boundp 'flylint-mode-map))
            (define-key flylint-mode-map (symbol-value variable) nil)
