@@ -2,5 +2,3 @@
 (source melpa)
 
 (package-file "flylint.el")
-
-(depends-on "seml-mode")

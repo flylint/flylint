@@ -6,7 +6,7 @@
 ;;         USAMI Kenta <tadsan@zonu.me>
 ;; Version: 0.0.1
 ;; Keywords: tools
-;; Package-Requires: ((emacs "26") (seml-mode "1.5"))
+;; Package-Requires: ((emacs "26"))
 ;; License: GPL-3.0
 ;; Homepage: https://github.com/flylint/flylint
 

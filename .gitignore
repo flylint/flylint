@@ -2,6 +2,3 @@
 *.elc
 /.cask
 /.make
-
-## depends package folders
-/seml-mode
