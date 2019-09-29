@@ -143,11 +143,10 @@
            (define-key flylint-mode-map key flylint-command-map))
          (set-default variable key)))
 
-(defcustom flylint-mode-line-prefix "FlyC"
+(defcustom flylint-mode-line-prefix "FlyL"
   "Base mode line lighter for Flylint."
   :group 'flylint
-  :type 'string
-  :package-version '(flylint . "26"))
+  :type 'string)
 
 
 ;;; Objects
