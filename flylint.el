@@ -125,6 +125,25 @@
   "Flylint face to highlight errors in the error list."
   :group 'flylint-faces)
 
+(define-fringe-bitmap 'flylint-fringe-double-arrow-bitmap
+    (vector #b00000000
+            #b00000000
+            #b00000000
+            #b00000000
+            #b00000000
+            #b10011000
+            #b01101100
+            #b00110110
+            #b00011011
+            #b00110110
+            #b01101100
+            #b10011000
+            #b00000000
+            #b00000000
+            #b00000000
+            #b00000000
+            #b00000000))
+
 
 ;;; Options
 
@@ -219,10 +238,45 @@ Slots:
 
 ;;; Functions
 
+(defun flylint--symbol (kind target)
+  "Return flylint symbol for KIND, TARGET."
+  (pcase kind
+    (`ov-category     (intern (format "flylint-%s-overlay" target)))
+    (`face            (intern (format "flylint-%s-face" target)))
+    (`fringe-face     (intern (format "flylint-fringe-%s-face" target)))
+    (`error-list-face (intern (format "flylint-error-list-%s-face" target)))
+    (_ (error "Call `flylint--symbol' with unkown keyword, %s" kind))))
+
 (defun flylint--mode-line-status-text ()
   "Get a text describing status for use in the mode line."
   (let ((errc 0) (warnc 0))
     (format " %s:%s/%s" flylint-mode-line-prefix errc warnc)))
+
+(defun flylint--add-overlay (err)
+  "Add overlay for ERR."
+  (if (not (flylint-error-p err))
+      (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but not")
+    (let* ((fringe-icon
+            (lambda (level side)
+              (unless (memq side '(left-fringe right-fringe))
+                (error "Invalid fringe side: %S" side))
+              (propertize "!" 'display
+                          (list side
+                                'flylint-fringe-double-arrow-bitmap
+                                (flylint--symbol 'fringe-face level)))))
+           (region (save-excursion
+                    (save-restriction
+                      (widen)
+                      (goto-char (flylint-error-column err))
+                      (bounds-of-thing-at-point 'sexp))))
+           (ov (make-overlay (car region) (cdr region)))
+           (level (flylint-error-level err)))
+      (overlay-put ov 'flylint-overlay t)
+      (overlay-put ov 'flylint-error err)
+      (overlay-put ov 'category (flylint--symbol 'ov-category level))
+      (overlay-put ov 'face (flylint--symbol 'face level))
+      (overlay-put ov 'before-string (funcall fringe-icon level 'left-fringe))
+      (overlay-put ov 'help-echo (flylint-error-message err)))))
 
 
 ;;; Main
