@@ -344,4 +344,9 @@ Slots:
   :lighter (:eval (flylint--mode-line-status-text)))
 
 (provide 'flylint)
+
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
+
 ;;; flylint.el ends here
