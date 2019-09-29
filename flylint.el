@@ -64,6 +64,57 @@
   :group 'flylint
   :type 'string)
 
+(defcustom flylint-indication-fringe 'left-fringe
+  "The indication place for Flylint errors and warnings.
+
+This variable controls how Flylint indicates errors in buffers.
+May either be `left-fringe', `right-fringe', or nil.
+
+If set to `left-fringe' or `right-fringe', indicate errors and
+warnings via icons in the left and right fringe respectively.
+
+If set to nil, do not indicate errors and warnings, but just
+highlight them according to `flylint-highlight-elements'."
+  :group 'flylint
+  :type '(choice (const :tag "Indicate in the left fringe" left-fringe)
+                 (const :tag "Indicate in the right fringe" right-fringe)
+                 (const :tag "Do not indicate" nil))
+  :safe #'symbolp)
+
+(defcustom flylint-highlight-elements 'symbols
+  "The highlighting elements for Flylint errors and warnings.
+
+The highlighting mode controls how Flylint highlights errors in
+buffers.  The following modes are known:
+
+`columns'
+     Highlight the error column.  If the error does not have a column,
+     highlight the whole line.
+
+`symbols'
+     Highlight the symbol at the error column, if there is any,
+     otherwise behave like `columns'.  This is the default.
+
+`sexps'
+     Highlight the expression at the error column, if there is
+     any, otherwise behave like `columns'.  Note that this mode
+     can be *very* slow in some major modes.
+
+`lines'
+     Highlight the whole line.
+
+nil
+     Do not highlight errors at all.  However, errors will still
+     be reported in the mode line and in error message popups,
+     and indicated according to `flylint-indication-fringe'."
+  :group 'flylint
+  :type '(choice (const :tag "Highlight columns only" columns)
+                 (const :tag "Highlight symbols" symbols)
+                 (const :tag "Highlight expressions" sexps)
+                 (const :tag "Highlight whole lines" lines)
+                 (const :tag "Do not highlight errors" nil))
+  :safe #'symbolp)
+
 
 ;;; Faces
 
@@ -258,24 +309,27 @@ Slots:
       (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but not")
     (let* ((fringe-icon
             (lambda (level side)
-              (unless (memq side '(left-fringe right-fringe))
-                (error "Invalid fringe side: %S" side))
-              (propertize "!" 'display
-                          (list side
-                                'flylint-fringe-double-arrow-bitmap
-                                (flylint--symbol 'fringe-face level)))))
+              (when side
+                (unless (memq side '(left-fringe right-fringe))
+                  (error "Invalid fringe side: %S" side))
+                (propertize "!" 'display
+                            (list side
+                                  'flylint-fringe-double-arrow-bitmap
+                                  (flylint--symbol 'fringe-face level))))))
            (region (save-excursion
                     (save-restriction
                       (widen)
                       (goto-char (flylint-error-column err))
-                      (bounds-of-thing-at-point 'sexp))))
+                      (bounds-of-thing-at-point
+                       (or flylint-highlight-elements 'sexp)))))
            (ov (make-overlay (car region) (cdr region)))
            (level (flylint-error-level err)))
       (overlay-put ov 'flylint-overlay t)
       (overlay-put ov 'flylint-error err)
       (overlay-put ov 'category (flylint--symbol 'ov-category level))
-      (overlay-put ov 'face (flylint--symbol 'face level))
-      (overlay-put ov 'before-string (funcall fringe-icon level 'left-fringe))
+      (overlay-put ov 'face (when flylint-highlight-elements
+                              (flylint--symbol 'face level)))
+      (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
       (overlay-put ov 'help-echo (flylint-error-message err)))))
 
 
