@@ -42,6 +42,29 @@
   :group 'flylint)
 
 
+;;; Options
+
+(defvar flylint-command-map
+  (let ((map (make-sparse-keymap)))
+    map)
+  "Keymap of Flylint interactive commands.")
+
+(defcustom flylint-keymap-prefix (kbd "C-c /")
+  "Prefix for key bindings of Flylint."
+  :group 'flylint
+  :type 'key-sequence
+  :set (lambda (variable key)
+         (when (and (boundp variable) (boundp 'flylint-mode-map))
+           (define-key flylint-mode-map (symbol-value variable) nil)
+           (define-key flylint-mode-map key flylint-command-map))
+         (set-default variable key)))
+
+(defcustom flylint-mode-line-prefix "FlyL"
+  "Base mode line lighter for Flylint."
+  :group 'flylint
+  :type 'string)
+
+
 ;;; Faces
 
 (defface flylint-error-face '((((supports :underline (:style wave)))
@@ -143,29 +166,6 @@
             #b00000000
             #b00000000
             #b00000000))
-
-
-;;; Options
-
-(defvar flylint-command-map
-  (let ((map (make-sparse-keymap)))
-    map)
-  "Keymap of Flylint interactive commands.")
-
-(defcustom flylint-keymap-prefix (kbd "C-c /")
-  "Prefix for key bindings of Flylint."
-  :group 'flylint
-  :type 'key-sequence
-  :set (lambda (variable key)
-         (when (and (boundp variable) (boundp 'flylint-mode-map))
-           (define-key flylint-mode-map (symbol-value variable) nil)
-           (define-key flylint-mode-map key flylint-command-map))
-         (set-default variable key)))
-
-(defcustom flylint-mode-line-prefix "FlyL"
-  "Base mode line lighter for Flylint."
-  :group 'flylint
-  :type 'string)
 
 
 ;;; Objects
