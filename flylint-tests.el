@@ -25,6 +25,13 @@
 (load "cort-test")
 (require 'flylint)
 
+
+;;; Interactive tests
+
+(defun flylint-tests-make-error ()
+  "Make `flylint-error' structure."
+  (interactive)
+  (flylint-error-new 10 5 'warning "Test warning" :checker 'sample-lint))
 
 ;; (provide 'flylint-tests)
 
