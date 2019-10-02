@@ -28,6 +28,10 @@
 
 ;;; Interactive tests
 
+(defconst flylint-tests-src-dir (file-name-directory
+                           (or load-file-name (buffer-file-name)))
+  "Source directory path of `flylint'.")
+
 (defun flylint-tests-make-error ()
   "Make `flylint-error' structure."
   (interactive)
@@ -37,6 +41,15 @@
   "Make overlay via `flylint--add-overlay'."
   (interactive)
   (flylint--add-overlay (flylint-tests-make-error)))
+
+(defun flylint-tests-get-sample-linter (name)
+  "Get sample linter output located in ./scripts/NAME."
+  (shell-command-to-string
+   (mapconcat #'shell-quote-argument
+              `("emacs" "--batch" "-l"
+                ,(expand-file-name (concat "scripts/" name)
+                                   flylint-tests-src-dir))
+              " ")))
 
 ;; (provide 'flylint-tests)
 
