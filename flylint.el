@@ -83,37 +83,37 @@ highlight them according to `flylint-highlight-elements'."
                  (const :tag "Do not indicate" nil))
   :safe #'symbolp)
 
-(defcustom flylint-highlight-elements 'symbols
+(defcustom flylint-highlight-elements 'symbol
   "The highlighting elements for Flylint errors and warnings.
 
 The highlighting mode controls how Flylint highlights errors in
 buffers.  The following modes are known:
 
-`columns'
+`column'
      Highlight the error column.  If the error does not have a column,
      highlight the whole line.
 
-`symbols'
+`symbol'
      Highlight the symbol at the error column, if there is any,
-     otherwise behave like `columns'.  This is the default.
+     otherwise behave like `column'.  This is the default.
 
-`sexps'
+`sexp'
      Highlight the expression at the error column, if there is
-     any, otherwise behave like `columns'.  Note that this mode
+     any, otherwise behave like `column'.  Note that this mode
      can be *very* slow in some major modes.
 
-`lines'
+`line'
      Highlight the whole line.
 
-nil
+'nil
      Do not highlight errors at all.  However, errors will still
      be reported in the mode line and in error message popups,
      and indicated according to `flylint-indication-fringe'."
   :group 'flylint
-  :type '(choice (const :tag "Highlight columns only" columns)
-                 (const :tag "Highlight symbols" symbols)
-                 (const :tag "Highlight expressions" sexps)
-                 (const :tag "Highlight whole lines" lines)
+  :type '(choice (const :tag "Highlight columns only" column)
+                 (const :tag "Highlight symbols" symbol)
+                 (const :tag "Highlight expressions" sexp)
+                 (const :tag "Highlight whole lines" line)
                  (const :tag "Do not highlight errors" nil))
   :safe #'symbolp)
 
@@ -323,7 +323,7 @@ Slots:
                       (widen)
                       (goto-char (flylint-error-column err))
                       (bounds-of-thing-at-point
-                       (or flylint-highlight-elements 'sexp)))))
+                       (or flylint-highlight-elements 'symbol)))))
            (ov     (when region (make-overlay (car region) (cdr region))))
            (level  (flylint-error-level err)))
       (when ov
