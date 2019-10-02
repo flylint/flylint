@@ -33,6 +33,11 @@
   (interactive)
   (flylint-error-new 10 5 'warning "Test warning" :checker 'sample-lint))
 
+(defun flylint-tests-make-overlay ()
+  "Make overlay via `flylint--add-overlay'."
+  (interactive)
+  (flylint--add-overlay (flylint-tests-make-error)))
+
 ;; (provide 'flylint-tests)
 
 ;; Local Variables:
