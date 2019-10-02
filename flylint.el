@@ -324,15 +324,16 @@ Slots:
                       (goto-char (flylint-error-column err))
                       (bounds-of-thing-at-point
                        (or flylint-highlight-elements 'sexp)))))
-           (ov (make-overlay (car region) (cdr region)))
-           (level (flylint-error-level err)))
-      (overlay-put ov 'flylint-overlay t)
-      (overlay-put ov 'flylint-error err)
-      (overlay-put ov 'category (flylint--symbol 'ov-category level))
-      (overlay-put ov 'face (when flylint-highlight-elements
-                              (flylint--symbol 'face level)))
-      (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
-      (overlay-put ov 'help-echo (flylint-error-message err)))))
+           (ov     (when region (make-overlay (car region) (cdr region))))
+           (level  (flylint-error-level err)))
+      (when ov
+        (overlay-put ov 'flylint-overlay t)
+        (overlay-put ov 'flylint-error err)
+        (overlay-put ov 'category (flylint--symbol 'ov-category level))
+        (overlay-put ov 'face (when flylint-highlight-elements
+                                (flylint--symbol 'face level)))
+        (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
+        (overlay-put ov 'help-echo (flylint-error-message err))))))
 
 
 ;;; Main
