@@ -42,7 +42,7 @@
   (interactive)
   (flylint--add-overlay (flylint-tests-make-error)))
 
-(defun flylint-tests-get-sample-linter (name)
+(defun flylint-tests-get-sample-linter-using-shell-command (name)
   "Get sample linter output located in ./scripts/NAME."
   (shell-command-to-string
    (mapconcat #'shell-quote-argument
@@ -50,6 +50,16 @@
                 ,(expand-file-name (concat "scripts/" name)
                                    flylint-tests-src-dir))
               " ")))
+
+(defun flylint-tests-get-sample-linter-using-async (name)
+  "Get sample linter output located in ./scripts/NAME."
+  (async-start-process "emacs" "emacs"
+                       (lambda (res)
+                         (message "Got from async Emacs:\n%s"
+                                  (pp-to-string res)))
+                       "--batch" "-l"
+                       (expand-file-name
+                        (concat "scripts/" name) flylint-tests-src-dir)))
 
 ;; (provide 'flylint-tests)
 
