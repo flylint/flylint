@@ -43,7 +43,10 @@
   (flylint--add-overlay (flylint-tests-make-error)))
 
 (defun flylint-tests-get-sample-linter-using-shell-command (name)
-  "Get sample linter output located in ./scripts/NAME."
+  "Get sample linter output located in ./scripts/NAME.
+
+Sample:
+  (flylint-tests-get-sample-linter-using-shell-command \"c-clang-sample\")"
   (shell-command-to-string
    (mapconcat #'shell-quote-argument
               `("emacs" "--batch" "-l"
@@ -52,7 +55,10 @@
               " ")))
 
 (defun flylint-tests-get-sample-linter-using-async (name)
-  "Get sample linter output located in ./scripts/NAME."
+  "Get sample linter output located in ./scripts/NAME.
+
+Sample:
+  (flylint-tests-get-sample-linter-using-async \"c-clang-sample\")"
   (async-start-process "emacs" "emacs"
                        (lambda (res)
                          (message "Got from async Emacs:\n%s"
