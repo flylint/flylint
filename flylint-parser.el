@@ -27,6 +27,8 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+
 (defgroup flylint-parser nil
   "Asynchronous on-the-fly inspection parser."
   :prefix "flylint-parser"
@@ -38,8 +40,172 @@
 
 ;;; Functions
 
+(defvar flylint-parser-alist nil
+  "Avairable parsers for `flylint-parser'.")
+
+(defun flylint-parser--rx-file-name (form)
+  "Translate the `(file-name)' FORM into a regular expression."
+  (let ((body (or (cdr form) '((minimal-match
+                                (one-or-more not-newline))))))
+    (rx-to-string `(group-n 1 ,@body) t)))
+
+(defun flylint-parser--rx-message (form)
+  "Translate the `(message)' FORM into a regular expression."
+  (let ((body (or (cdr form) '((one-or-more not-newline)))))
+    (rx-to-string `(group-n 4 ,@body) t)))
+
+(defun flylint-parser--rx-id (form)
+  "Translate the `(id)' FORM into a regular expression."
+  (rx-to-string `(group-n 5 ,@(cdr form)) t))
+
+(defun flylint-parser--rx-to-string (form &optional no-group)
+  "Like `rx-to-string' for FORM, but with special keywords:
+
+`line'
+     matches the line number.
+
+`column'
+     matches the column number.
+
+`(file-name SEXP ...)'
+     matches the file name.  SEXP describes the file name.  If no
+     SEXP is given, use a default body of `(minimal-match
+     (one-or-more not-newline))'.
+
+`(message SEXP ...)'
+     matches the message.  SEXP constitutes the body of the
+     message.  If no SEXP is given, use a default body
+     of `(one-or-more not-newline)'.
+
+`(id SEXP ...)'
+     matches an error ID.  SEXP describes the ID.
+
+NO-GROUP is passed to `rx-to-string'.
+
+See `rx' for a complete list of all built-in `rx' forms."
+  (let ((rx-constituents
+         (append
+          `((line . ,(rx (group-n 2 (one-or-more digit))))
+            (column . ,(rx (group-n 3 (one-or-more digit))))
+            (file-name flylint-parser--rx-file-name 0 nil)
+            (message flylint-parser--rx-message 0 nil)
+            (id flylint-parser--rx-id 0 nil))
+          rx-constituents nil)))
+    (rx-to-string form no-group)))
+
+(defmacro flylint-parser--update-values (fn args)
+  "Update ARGS with applied FN."
+  (declare (indent 1))
+  `(progn
+     ,@(mapcar (lambda (elm)
+                 `(setq ,elm (funcall ,fn ,elm)))
+               (eval args))))
+
+(cl-defstruct (flylint-parser (:constructor flylint-parser-new
+                                            (name docstring
+                                                  &key
+                                                  command
+                                                  standard-input
+                                                  working-directory
+                                                  error-patterns
+                                                  enabled
+                                                  modes
+                                                  next-checkers)))
+  "Structure representing parser for each linters.
+Slots:
+
+`name'
+     Parser name, as symbol.
+
+`docstring'
+     Parser description, as string.
+
+`command'
+     Linter command and args, as pair such as (COMMAND . (ARGS ARGS ...)).
+
+`standard-input'
+     Whether the parser uses standard output, as bool.
+
+`working-directory'
+     Working directory for parser, as string.
+
+`error-patterns'
+     Error patterns linter output, as list.
+
+`enabled'
+     Whether parser enabled, as bool.
+
+`modes'
+     What major/minor-mode(s) parser enabled, as list.
+
+`next-chekcers'
+     Next checkers, as list."
+  name docstring command standard-input working-directory
+  error-patterns enabled modes next-checkers)
+
+;;;###autoload
+(cl-defmacro flylint-parser-define (name docstring
+                                         &key
+                                         command
+                                         standard-input
+                                         working-directory
+                                         error-patterns
+                                         enabled
+                                         modes
+                                         next-checkers)
+  "Define NAME as flylint-parser.
+DOCSTRING is an optional documentation string."
+  (declare (indent defun) (doc-string 2))
+  (let ((fn (lambda (elm)
+              (if (and (listp elm)
+                       (member `',(car elm)
+                               `('quote ',backquote-backquote-symbol)))
+                  (eval elm)
+                elm))))
+    (flylint-parser--update-values fn
+      (list 'name 'docstring 'command 'standard-input 'working-directory
+            'error-patterns 'enabled 'modes 'next-checkers)))
+  `(push '(,name . ,(flylint-parser-new
+                     name docstring
+                     :command           command
+                     :standard-input    standard-input
+                     :working-directory working-directory
+                     :error-patterns    (mapcar (lambda (elm)
+                                                  `(,(car elm) .
+                                                    ,(flylint-parser--rx-to-string
+                                                      `(: ,@(cdr elm)) 'no-group)))
+                                                error-patterns)
+                     :enabled           enabled
+                     :modes             modes
+                     :next-checkers     next-checkers))
+         flylint-parser-alist))
+
+(defconst flylint-parser-font-lock-keywords
+  '(("(\\(flylint-parser-define\\)\\_>[ \t']*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
+     (1 font-lock-keyword-face)
+     (2 font-lock-function-name-face nil t)))
+  "A font-lock regexp of `flylint-parser-define' for `emacs-lisp-mode'.")
+
+(font-lock-add-keywords 'emacs-lisp-mode flylint-parser-font-lock-keywords)
+
 
 ;;; Main
+
+(flylint-parser-define c/c++-gcc
+  "A C/C++ syntax checker using GCC.
+Requires GCC 4.4 or newer.  See URL `https://gcc.gnu.org/'."
+  :command ("gcc"
+            "-Wall" "-Wextra")
+  :standard-input t
+  :error-patterns
+  ((info    . (line-start (or "<stdin>" (file-name)) ":" line ":" column
+                          ": note: " (message) line-end))
+   (warning . (line-start (or "<stdin>" (file-name)) ":" line ":" column
+                          ": warning: " (message (one-or-more (not (any "\n["))))
+                          (optional "[" (id (one-or-more not-newline)) "]") line-end))
+   (error   . (line-start (or "<stdin>" (file-name)) ":" line ":" column
+                          ": " (or "fatal error" "error") ": " (message) line-end)))
+  :modes (c-mode c++-mode))
 
 (provide 'flylint-parser)
 
