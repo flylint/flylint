@@ -58,7 +58,25 @@ Sample:
   "Get sample linter output located in ./scripts/NAME.
 
 Sample:
-  (flylint-tests-get-sample-linter-using-async \"c-clang-sample\")"
+  (flylint-tests-get-sample-linter-using-async \"c-clang-sample.el\")"
+  (async-start
+   `(lambda ()
+      (with-output-to-string
+        (eval (read
+               (with-temp-buffer
+                 (insert-file-contents
+                  ,(expand-file-name
+                    (concat "scripts/" name) flylint-tests-src-dir))
+                 (buffer-string))))))
+   (lambda (res)
+     (message "Got from async Emacs: %s" res))))
+
+(defun flylint-tests-get-sample-linter-using-async-process (name)
+  "Get sample linter output located in ./scripts/NAME.
+
+Sample:
+  (flylint-tests-get-sample-linter-using-async-process \"c-clang-sample\")"
+  (interactive)
   (async-start-process "emacs" "emacs"
                        (lambda (res)
                          (message "Got from async Emacs:\n%s"
