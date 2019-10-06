@@ -31,6 +31,8 @@
 ;;; Code:
 
 (require 'async)
+(require 'promise)
+(require 'async-await)
 
 (defgroup flylint nil
   "Asynchronous on-the-fly inspection."

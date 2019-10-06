@@ -85,6 +85,23 @@ Sample:
                        (expand-file-name
                         (concat "scripts/" name) flylint-tests-src-dir)))
 
+(async-defun flylint-tests-get-sample-linter-using-async-await (name)
+  "Get sample linter output located in ./scripts/NAME.
+
+Sample
+  (flylint-tests-get-sample-linter-using-asinc-await \"c-clang-sample\")"
+  (let (res)
+    (setq res (await (promise:async-start
+                     `(lambda ()
+                       (with-output-to-string
+                         (eval
+                          (read
+                           (with-temp-buffer
+                             (insert-file-contents
+                              ,(concat flylint-tests-src-dir "scripts/c-clang-sample.el"))
+                             (buffer-string)))))))))
+   (message "Got from async Emacs: %s" res)))
+
 ;; (provide 'flylint-tests)
 
 ;; Local Variables:
