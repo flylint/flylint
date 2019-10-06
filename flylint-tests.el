@@ -2,6 +2,11 @@
 
 ;; Copyright (C) 2019  Flylint Community
 
+;; Author: Naoya Yamashita <conao3@gmail.com>
+;;         USAMI Kenta <tadsan@zonu.me>
+;; License: GPL-3.0
+;; Homepage: https://github.com/flylint/flylint
+
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
