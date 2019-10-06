@@ -90,17 +90,19 @@ Sample:
 
 Sample
   (flylint-tests-get-sample-linter-using-asinc-await \"c-clang-sample\")"
-  (let (res)
-    (setq res (await (promise:async-start
-                     `(lambda ()
-                       (with-output-to-string
-                         (eval
-                          (read
-                           (with-temp-buffer
-                             (insert-file-contents
-                              ,(concat flylint-tests-src-dir "scripts/c-clang-sample.el"))
-                             (buffer-string)))))))))
-   (message "Got from async Emacs: %s" res)))
+  (condition-case err
+      (let ((res (await (promise:async-start
+                         `(lambda ()
+                            (with-output-to-string
+                              (eval
+                               (read
+                                (with-temp-buffer
+                                  (insert-file-contents
+                                   ,(concat flylint-tests-src-dir "scripts/c-clang-sample.el"))
+                                  (buffer-string))))))))))
+        (message "Got from async Emacs: %s" res))
+    (error
+     (message "error!: %s" err))))
 
 ;; (provide 'flylint-tests)
 
