@@ -109,6 +109,19 @@ Sample
     (error
      (message "error!: %s" err))))
 
+(async-defun flylint-tests-get-sample-linter-raw (name)
+  "Get sample linter output raw located in ./scripts/NAME.
+
+Sample:
+  (flylint-tests-get-sample-linter-raw \"c-gcc-sample.sh\")"
+  (condition-case err
+      (let ((res (await (promise:make-process
+                         (concat flylint-tests-src-dir "scripts/" name)))))
+        (if (string-empty-p (cadr res))
+            (message "done!\n%s" (car res))
+          (error (cadr res))))
+    (message "error!\n%s" err)))
+
 ;; (provide 'flylint-tests)
 
 ;; Local Variables:
