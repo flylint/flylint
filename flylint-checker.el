@@ -1,4 +1,4 @@
-;;; flylint-parser.el --- Asynchronous on-the-fly inspection framework  -*- lexical-binding: t; -*-
+;;; flylint-checker.el --- Asynchronous on-the-fly inspection framework  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Flylint Community
 
@@ -29,9 +29,9 @@
 
 (require 'cl-lib)
 
-(defgroup flylint-parser nil
+(defgroup flylint-checker nil
   "Asynchronous on-the-fly inspection parser."
-  :prefix "flylint-parser"
+  :prefix "flylint-checker"
   :group 'tools)
 
 
@@ -40,25 +40,25 @@
 
 ;;; Functions
 
-(defvar flylint-parser-alist nil
-  "Avairable parsers for `flylint-parser'.")
+(defvar flylint-checker-alist nil
+  "Avairable parsers for `flylint-checker'.")
 
-(defun flylint-parser--rx-file-name (form)
+(defun flylint-checker--rx-file-name (form)
   "Translate the `(file-name)' FORM into a regular expression."
   (let ((body (or (cdr form) '((minimal-match
                                 (one-or-more not-newline))))))
     (rx-to-string `(group-n 1 ,@body) t)))
 
-(defun flylint-parser--rx-message (form)
+(defun flylint-checker--rx-message (form)
   "Translate the `(message)' FORM into a regular expression."
   (let ((body (or (cdr form) '((one-or-more not-newline)))))
     (rx-to-string `(group-n 4 ,@body) t)))
 
-(defun flylint-parser--rx-id (form)
+(defun flylint-checker--rx-id (form)
   "Translate the `(id)' FORM into a regular expression."
   (rx-to-string `(group-n 5 ,@(cdr form)) t))
 
-(defun flylint-parser--rx-to-string (form &optional no-group)
+(defun flylint-checker--rx-to-string (form &optional no-group)
   "Like `rx-to-string' for FORM, but with special keywords:
 
 `line'
@@ -87,13 +87,13 @@ See `rx' for a complete list of all built-in `rx' forms."
          (append
           `((line . ,(rx (group-n 2 (one-or-more digit))))
             (column . ,(rx (group-n 3 (one-or-more digit))))
-            (file-name flylint-parser--rx-file-name 0 nil)
-            (message flylint-parser--rx-message 0 nil)
-            (id flylint-parser--rx-id 0 nil))
+            (file-name flylint-checker--rx-file-name 0 nil)
+            (message flylint-checker--rx-message 0 nil)
+            (id flylint-checker--rx-id 0 nil))
           rx-constituents nil)))
     (rx-to-string form no-group)))
 
-(defmacro flylint-parser--update-values (fn args)
+(defmacro flylint-checker--update-values (fn args)
   "Update ARGS with applied FN."
   (declare (indent 1))
   `(progn
@@ -101,7 +101,7 @@ See `rx' for a complete list of all built-in `rx' forms."
                  `(setq ,elm (funcall ,fn ,elm)))
                (eval args))))
 
-(cl-defstruct (flylint-parser (:constructor flylint-parser-new
+(cl-defstruct (flylint-checker (:constructor flylint-checker-new
                                             (name docstring
                                                   &key
                                                   command
@@ -144,7 +144,7 @@ Slots:
   error-patterns enabled modes next-checkers)
 
 ;;;###autoload
-(cl-defmacro flylint-parser-define (name docstring
+(cl-defmacro flylint-checker-define (name docstring
                                          &key
                                          command
                                          standard-input
@@ -153,7 +153,7 @@ Slots:
                                          enabled
                                          modes
                                          next-checkers)
-  "Define NAME as flylint-parser.
+  "Define NAME as flylint-checker.
 DOCSTRING is an optional documentation string."
   (declare (indent defun) (doc-string 2))
   (let ((fn (lambda (elm)
@@ -162,36 +162,36 @@ DOCSTRING is an optional documentation string."
                                `('quote ',backquote-backquote-symbol)))
                   (eval elm)
                 elm))))
-    (flylint-parser--update-values fn
+    (flylint-checker--update-values fn
       (list 'name 'docstring 'command 'standard-input 'working-directory
             'error-patterns 'enabled 'modes 'next-checkers)))
-  `(push '(,name . ,(flylint-parser-new
+  `(push '(,name . ,(flylint-checker-new
                      name docstring
                      :command           command
                      :standard-input    standard-input
                      :working-directory working-directory
                      :error-patterns    (mapcar (lambda (elm)
                                                   `(,(car elm) .
-                                                    ,(flylint-parser--rx-to-string
+                                                    ,(flylint-checker--rx-to-string
                                                       `(: ,@(cdr elm)) 'no-group)))
                                                 error-patterns)
                      :enabled           enabled
                      :modes             modes
                      :next-checkers     next-checkers))
-         flylint-parser-alist))
+         flylint-checker-alist))
 
-(defconst flylint-parser-font-lock-keywords
-  '(("(\\(flylint-parser-define\\)\\_>[ \t']*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
+(defconst flylint-checker-font-lock-keywords
+  '(("(\\(flylint-checker-define\\)\\_>[ \t']*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
      (1 font-lock-keyword-face)
      (2 font-lock-function-name-face nil t)))
-  "A font-lock regexp of `flylint-parser-define' for `emacs-lisp-mode'.")
+  "A font-lock regexp of `flylint-checker-define' for `emacs-lisp-mode'.")
 
-(font-lock-add-keywords 'emacs-lisp-mode flylint-parser-font-lock-keywords)
+(font-lock-add-keywords 'emacs-lisp-mode flylint-checker-font-lock-keywords)
 
 
 ;;; Main
 
-(flylint-parser-define c/c++-gcc
+(flylint-checker-define c/c++-gcc
   "A C/C++ syntax checker using GCC.
 Requires GCC 4.4 or newer.  See URL `https://gcc.gnu.org/'."
   :command ("gcc"
@@ -207,10 +207,10 @@ Requires GCC 4.4 or newer.  See URL `https://gcc.gnu.org/'."
                           ": " (or "fatal error" "error") ": " (message) line-end)))
   :modes (c-mode c++-mode))
 
-(provide 'flylint-parser)
+(provide 'flylint-checker)
 
 ;; Local Variables:
 ;; indent-tabs-mode: nil
 ;; End:
 
-;;; flylint-parser.el ends here
+;;; flylint-checker.el ends here
