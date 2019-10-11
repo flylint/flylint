@@ -80,7 +80,7 @@ Sample:
   "Get sample linter output located in ./scripts/NAME.
 
 Sample:
-  (flylint-tests-get-sample-linter-using-async-process \"c-clang-sample\")"
+  (flylint-tests-get-sample-linter-using-async-process \"c-clang-sample.el\")"
   (interactive)
   (async-start-process "emacs" "emacs"
                        (lambda (res)
@@ -94,7 +94,7 @@ Sample:
   "Get sample linter output located in ./scripts/NAME.
 
 Sample
-  (flylint-tests-get-sample-linter-using-asinc-await \"c-clang-sample\")"
+  (flylint-tests-get-sample-linter-using-asinc-await \"c-clang-sample.el\")"
   (condition-case err
       (let ((res (await (promise:async-start
                          `(lambda ()
@@ -113,7 +113,7 @@ Sample
   "Get sample linter output raw located in ./scripts/NAME.
 
 Sample:
-  (flylint-tests-get-sample-linter-raw \"c-gcc-sample.sh\")"
+  (flylint-tests-get-sample-linter-raw \"c-gcc-sample-raw.sh\")"
   (condition-case err
       (let ((res (await (promise:make-process
                          (concat flylint-tests-src-dir "scripts/" name)))))
