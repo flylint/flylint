@@ -30,6 +30,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'async)
 (require 'promise)
 (require 'async-await)
