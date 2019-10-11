@@ -54,8 +54,8 @@ We welcome PR!
 
 ** License
 #+begin_example
-  General Public License Version 3 (AGPLv3)
-  Copyright (c) Naoya Yamashita, USAMI Kenta
+  General Public License Version 3 (GPLv3)
+  Copyright (c) Flylint Community
   https://github.com/flylint/flylint/blob/master/LICENSE
 #+end_example
 
