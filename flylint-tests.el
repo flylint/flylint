@@ -120,7 +120,8 @@ Sample:
         (if (string-empty-p (cadr res))
             (message "done!\n%s" (car res))
           (error (cadr res))))
-    (message "error!\n%s" err)))
+    (error
+     (message "error!\n%s" err))))
 
 ;; (provide 'flylint-tests)
 
