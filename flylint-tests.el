@@ -123,6 +123,20 @@ Sample:
     (error
      (message "error!\n%s" err))))
 
+(flylint-parser-define c/gcc-sample
+  "A sumple parser for gcc sample."
+  :command `(,(expand-file-name "scripts/c-gcc-sample-raw.sh" flylint-tests-src-dir))
+  :standard-input t
+  :error-patterns
+  ((info    . (line-start (or "<stdin>" (file-name)) ":" line ":" column
+                          ": note: " (message) line-end))
+   (warning . (line-start (or "<stdin>" (file-name)) ":" line ":" column
+                          ": warning: " (message (one-or-more (not (any "\n["))))
+                          (optional "[" (id (one-or-more not-newline)) "]") line-end))
+   (error   . (line-start (or "<stdin>" (file-name)) ":" line ":" column
+                          ": " (or "fatal error" "error") ": " (message) line-end)))
+  :modes (c-mode c++-mode))
+
 ;; (provide 'flylint-tests)
 
 ;; Local Variables:
