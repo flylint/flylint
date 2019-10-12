@@ -31,9 +31,8 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'async)
-(require 'promise)
 (require 'async-await)
+(require 'flylint-checker)
 
 (defgroup flylint nil
   "Asynchronous on-the-fly inspection."
