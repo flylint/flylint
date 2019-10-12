@@ -123,7 +123,7 @@ Sample:
     (error
      (message "error!\n%s" err))))
 
-(flylint-parser-define c/gcc-sample
+(flylint-checker-define c/gcc-sample
   "A sumple parser for gcc sample."
   :command `(,(expand-file-name "scripts/c-gcc-sample-raw.sh" flylint-tests-src-dir))
   :standard-input t
