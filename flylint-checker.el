@@ -156,14 +156,15 @@ ERROR-PATTERNS ENABLED MODES NEXT-CHECKERS)"
                  if (not (keywordp key*)) do (error "%s is not keyword" key*)
                  if (not (memq key* keywords)) do (error "Unrecognize keyword: %s" key*)
                  if (eq key* :error-patterns)
-                 do (setq val*
-                          (mapcar (lambda (elm)
-                                    `(,(car elm) .
-                                      ,(flylint-checker--rx-to-string
-                                        `(: ,@(cdr elm)) 'no-group)))
-                                  val*))
-                 append (list key* val*))))
-    `(push '(,name . ,(apply 'flylint-checker--new args*))
+                 do (setq val* `(mapcar
+                                 (lambda (elm)
+                                   `(,(car elm) .
+                                     ,(flylint-checker--rx-to-string
+                                       `(: ,@(cdr elm)) 'no-group)))
+                                 ',val*))
+                 else do (setq val* `',val*)
+                 append `(,key* ,val*))))
+    `(push (cons ',name (flylint-checker--new ,@args*))
            flylint-checker-alist)))
 
 (defconst flylint-checker-font-lock-keywords
