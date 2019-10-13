@@ -93,14 +93,6 @@ See `rx' for a complete list of all built-in `rx' forms."
           rx-constituents nil)))
     (rx-to-string form no-group)))
 
-(defmacro flylint-checker--update-values (fn args)
-  "Update ARGS with applied FN."
-  (declare (indent 1))
-  `(progn
-     ,@(mapcar (lambda (elm)
-                 `(setq ,elm (funcall ,fn ,elm)))
-               (eval args))))
-
 (cl-defstruct (flylint-checker (:constructor flylint-checker--new))
   "Structure representing parser for each linters.
 Slots:
