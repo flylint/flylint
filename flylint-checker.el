@@ -101,16 +101,7 @@ See `rx' for a complete list of all built-in `rx' forms."
                  `(setq ,elm (funcall ,fn ,elm)))
                (eval args))))
 
-(cl-defstruct (flylint-checker (:constructor flylint-checker-new
-                                            (name docstring
-                                                  &key
-                                                  command
-                                                  standard-input
-                                                  working-directory
-                                                  error-patterns
-                                                  enabled
-                                                  modes
-                                                  next-checkers)))
+(cl-defstruct (flylint-checker (:constructor flylint-checker--new))
   "Structure representing parser for each linters.
 Slots:
 
@@ -144,41 +135,44 @@ Slots:
   error-patterns enabled modes next-checkers)
 
 ;;;###autoload
-(cl-defmacro flylint-checker-define (name docstring
-                                         &key
-                                         command
-                                         standard-input
-                                         working-directory
-                                         error-patterns
-                                         enabled
-                                         modes
-                                         next-checkers)
+(defmacro flylint-checker-define (name &optional docstring &rest args)
   "Define NAME as flylint-checker.
-DOCSTRING is an optional documentation string."
+DOCSTRING is an optional documentation string.
+ARGS is a list of KEY VALUE pairs, described `flylint-checker'.
+
+\(fn NAME [DOCSTRING] &key COMMAND STANDARD-INPUT WORKING-DIRECTORY
+ERROR-PATTERNS ENABLED MODES NEXT-CHECKERS)"
   (declare (indent defun) (doc-string 2))
-  (let ((fn (lambda (elm)
-              (if (and (listp elm)
-                       (member `',(car elm)
-                               `('quote ',backquote-backquote-symbol)))
-                  (eval elm)
-                elm))))
-    (flylint-checker--update-values fn
-      (list 'name 'docstring 'command 'standard-input 'working-directory
-            'error-patterns 'enabled 'modes 'next-checkers)))
-  `(push '(,name . ,(flylint-checker-new
-                     name docstring
-                     :command           command
-                     :standard-input    standard-input
-                     :working-directory working-directory
-                     :error-patterns    (mapcar (lambda (elm)
-                                                  `(,(car elm) .
-                                                    ,(flylint-checker--rx-to-string
-                                                      `(: ,@(cdr elm)) 'no-group)))
-                                                error-patterns)
-                     :enabled           enabled
-                     :modes             modes
-                     :next-checkers     next-checkers))
-         flylint-checker-alist))
+  (unless (stringp docstring)
+    (setq args (append (list docstring) args))
+    (setq docstring ""))
+  (setq args (append (list :name name :docstring docstring) args))
+  (let* ((keywords (list :name :docstring :command
+                         :standard-input :working-directory
+                         :error-patterns :enabled :modes
+                         :next-checkers))
+         (fn (lambda (elm)
+               (if (and (listp elm)
+                        (member `',(car elm)
+                                `('quote ',backquote-backquote-symbol)))
+                   (eval elm)
+                 elm)))
+         (args* (cl-loop
+                 for (key val) on args by 'cddr
+                 for key* = (funcall fn key)
+                 for val* = (funcall fn val)
+                 if (not (keywordp key*)) do (error "%s is not keyword" key*)
+                 if (not (memq key* keywords)) do (error "Unrecognize keyword: %s" key*)
+                 if (eq key* :error-patterns)
+                 do (setq val*
+                          (mapcar (lambda (elm)
+                                    `(,(car elm) .
+                                      ,(flylint-checker--rx-to-string
+                                        `(: ,@(cdr elm)) 'no-group)))
+                                  val*))
+                 append (list key* val*))))
+    `(push '(,name . ,(apply 'flylint-checker--new args*))
+           flylint-checker-alist)))
 
 (defconst flylint-checker-font-lock-keywords
   '(("(\\(flylint-checker-define\\)\\_>[ \t']*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
