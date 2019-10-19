@@ -17,13 +17,13 @@
 
 all:
 
+PACKAGE_NAME := flylint
 VERSIONS     := 26.1 26.2
 
 EMACS        ?= emacs
 LOADPATH     := $$(cask load-path)
 BATCH        := EMACSLOADPATH=$(LOADPATH) $(EMACS) -Q --batch
 
-PACKAGE_NAME := flylint
 TESTFILE     := $(PACKAGE_NAME)-tests.el
 ELS          := $(shell cask files)
 
