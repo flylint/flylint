@@ -43,6 +43,7 @@ export TESTFILE
 all: git-hook localbuild
 
 git-hook: $(GIT_HOOKS:%=.git/hooks/%)
+
 localbuild: $(ELS:%.el=%.elc)
 localtest: localbuild
 	$(BATCH) -l $(TESTFILE) -f cort-test-run
