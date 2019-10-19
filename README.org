@@ -16,7 +16,6 @@
 - [[#customize][Customize]]
 - [[#syntaxes][Syntaxes]]
 - [[#information][Information]]
-  - [[#donation][Donation]]
   - [[#community][Community]]
   - [[#contribution][Contribution]]
   - [[#migration][Migration]]
@@ -34,13 +33,6 @@
 * Customize
 
 * Information
-** Donation
-I love OSS and I am dreaming of working on it as *full-time* job.
-
-*With your support*, I will be able to spend more time at OSS!
-
-[[https://www.patreon.com/conao3][https://c5.patreon.com/external/logo/become_a_patron_button.png]]
-
 ** Community
 All feedback and suggestions are welcome!
 
