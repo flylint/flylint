@@ -28,6 +28,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'rx)
 
 (defgroup flylint-checker nil
   "Asynchronous on-the-fly inspection parser."

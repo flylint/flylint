@@ -50,6 +50,24 @@ if you want a more casual conversation.
 ** Contribution
 We welcome PR!
 
+Below operation flow is recommended.
+*** Running test
+#+begin_src shell
+  make                              # Install git-hooks in local .git
+
+  git branch [feature-branch]       # Create branch named [feature-branch]
+  git checkout [feature-branch]     # Checkout branch named [feature-branch]
+
+  # <edit loop>
+  emacs flylint.el                  # Edit something you want
+
+  make test                         # Test flylint via multi version Emacs
+  git commit -am "brabra"           # Commit (auto-run test before commit)
+  # </edit loop>
+
+  make down                         # Down docker-compose
+#+end_src
+
 ** Migration
 
 ** License

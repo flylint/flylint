@@ -1,4 +1,8 @@
 *-autoloads.el
 *.elc
 /.cask
-/.make
+
+# misc docker files/folders
+/.env
+/.docker
+/.docker.env
