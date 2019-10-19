@@ -17,8 +17,6 @@
 
 all:
 
-include Makefunc.mk
-
 VERSIONS     := 26.1 26.2
 
 EMACS        ?= emacs
