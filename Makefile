@@ -67,7 +67,7 @@ GABAGES := .cask .env .docker.env .docker
 
 .cask: Cask
 	cask install
-	find $$(cask load-path | tr ':' '\n' | grep -o '\.cask.*' | tr '\n' ' ') -name "*.elc" | xargs rm -f
+	find $@ -name "*.elc" | xargs rm -f
 	touch $@
 
 .docker/emacs-%/Makefile: Makefile-docker.mk
