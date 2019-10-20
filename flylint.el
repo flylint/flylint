@@ -203,7 +203,8 @@ buffers.  The following modes are known:
   "Flylint face to highlight errors in the error list."
   :group 'flylint-faces)
 
-(define-fringe-bitmap 'flylint-fringe-double-arrow-bitmap
+(when (fboundp 'define-fringe-bitmap)
+  (define-fringe-bitmap 'flylint-fringe-double-arrow-bitmap
     (vector #b00000000
             #b00000000
             #b00000000
@@ -220,7 +221,7 @@ buffers.  The following modes are known:
             #b00000000
             #b00000000
             #b00000000
-            #b00000000))
+            #b00000000)))
 
 
 ;;; Objects
