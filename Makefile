@@ -92,7 +92,7 @@ tr '\n' ':' | sed 's|^|/$(PACKAGE_NAME)/:|g')" > $@
 
 up: .docker/up
 down:
-	docker-compose down
+	if [ -e .docker/up ]; then docker-compose down; fi
 	rm -rf .docker/up
 
 build: $(VERSIONS:%=.make-build-%)
