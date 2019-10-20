@@ -32,7 +32,7 @@ BATCH := $(EMACS) --batch
 all: init
 
 init: $(ELS) $(TESTFILE) .cask
-build: $(ELS:%.el=%.elc)
+build: init $(ELS:%.el=%.elc)
 test: build
 	docker exec -t $(PACKAGE_NAME)_emacs-$(VERSION) sh -c "cd $(PACKAGE_NAME); $(BATCH) -l $(TESTFILE) -f cort-test-run"
 

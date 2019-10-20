@@ -37,7 +37,7 @@ export TESTFILE
 
 ##################################################
 
-.PHONY: all git-hook init build test down clean
+.PHONY: all git-hook localbuild localtest up down build test clean
 .PRECIOUS: $(VERSIONS:%=.docker/emacs-%/Makefile)
 
 all: git-hook localbuild
@@ -86,27 +86,22 @@ tr '\n' ':' | sed 's|^|/$(PACKAGE_NAME)/:|g')" > $@
 #  docker managemant
 #
 
-.docker/up: up
+.docker/up: .cask .env .docker.env $(VERSIONS:%=.docker/emacs-%/Makefile)
+	docker-compose up -d --no-recreate
 	touch .docker/up
 
-up: init .cask .env .docker.env
-	docker-compose up -d --no-recreate
-
+up: .docker/up
 down:
 	docker-compose down
 	rm -rf .docker/up
 
-init: $(VERSIONS:%=.make-init-%)
 build: $(VERSIONS:%=.make-build-%)
 test:  $(VERSIONS:%=.make-test-%)
 
-.make-init-%: $(VERSIONS:%=.docker/emacs-%/Makefile) .cask
-	$(MAKE) $(MAKEARGS) init -C .docker/emacs-$* VERSION=$*
-
-.make-build-%: init .docker/up
+.make-build-%: up
 	$(MAKE) $(MAKEARGS) build -C .docker/emacs-$* VERSION=$* 
 
-.make-test-%: init .docker/up
+.make-test-%: up
 	$(MAKE) $(MAKEARGS) test -C .docker/emacs-$* VERSION=$*
 
 ##############################
