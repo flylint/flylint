@@ -27,7 +27,7 @@ BATCH := $(EMACS) --batch
 
 ##################################################
 
-.PHONY: all
+.PHONY: all init build test clean
 
 all: init
 
