@@ -6,5 +6,9 @@ env:
     - EMACS_VERSION=verbose-alpine-min-26.1
     - EMACS_VERSION=verbose-alpine-min-26.2
 
+install:
+  - export PATH="/home/travis/.cask/bin:$PATH"
+  - curl -fsSkL https://raw.github.com/cask/cask/master/go | python
+
 script:
   - make test
