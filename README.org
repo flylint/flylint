@@ -42,8 +42,8 @@ if you want a more casual conversation.
 ** Contribution
 We welcome PR!
 
-Below operation flow is recommended.
 *** Running test
+Below operation flow is recommended.
 #+begin_src shell
   make                              # Install git-hooks in local .git
 
