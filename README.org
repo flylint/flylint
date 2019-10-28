@@ -42,6 +42,42 @@ if you want a more casual conversation.
 ** Contribution
 We welcome PR!
 
+*** Require tools for testing
+- cask
+  #+begin_src shell
+    cd ~/
+    hub clone cask/cask
+    export PATH="$HOME/.cask/bin:$PATH"
+  #+end_src
+
+- docker
+  Below snippet for Arch. Please see [[https://docs.docker.com/][document]] for another distribution
+  #+begin_src shell
+    sudo pacman -S docker
+    sudo systemctl start docker.service
+    sudo systemctl enable docker.service
+    sudo gpasswd -a $USER docker
+    sudo reboot                     # to reflect `gpasswd`
+  #+end_src
+
+- docker-compose
+  Below snippet for Arch. Please see [[https://docs.docker.com/compose/install/][document]] for another distribution
+  #+begin_src shell
+    sudo pacman -S docker-compose
+  #+end_src
+
+Note: I'm using below versions.
+#+begin_src shell
+  $ cask --version
+  0.8.4
+
+  $ docker --version
+  Docker version 19.03.4-ce, build 9013bf583a
+
+  $ docker-compose --version                                                   
+  docker-compose version 1.24.1, build unknow
+#+end_src
+
 *** Running test
 Below operation flow is recommended.
 #+begin_src shell
