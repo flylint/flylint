@@ -18,6 +18,8 @@
 all:
 
 PACKAGE_NAME := flylint
+REPO_USER    := flylint
+REPO_NAME    := $(PACKAGE_NAME)
 VERSIONS     := 26.1 26.2
 
 EMACS        ?= emacs
@@ -40,9 +42,31 @@ export TESTFILE
 .PHONY: all git-hook localbuild localtest up down build test clean
 .PRECIOUS: $(VERSIONS:%=.docker/emacs-%/Makefile)
 
-all: git-hook
+all: git-hook help
 
 git-hook: $(GIT_HOOKS:%=.git/hooks/%)
+
+help:
+	$(info )
+	$(info Commands)
+	$(info ========)
+	$(info   - make             # Install git-hook to your local .git folder)
+	$(info   - make test        # Test $(PACKAGE_NAME) via docker-compose)
+	$(info   - make down        # Down docker-compose)
+	$(info )
+	$(info Commands using your emacs)
+	$(info =========================)
+	$(info   - make localtest   # Test $(PACKAGE_NAME) via your `emacs`)
+	$(info )
+	$(info Cleaning)
+	$(info ========)
+	$(info   - make clean       # Clean compiled files, docker conf files)
+	$(info )
+	$(info Required `cask`, `docker` and `docker-compose`.)
+	$(info See https://github.com/$(REPO_USER)/$(REPO_NAME)#contribution)
+	$(info )
+
+##############################
 
 localbuild: $(ELS:%.el=%.elc)
 localtest: localbuild
