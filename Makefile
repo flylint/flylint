@@ -40,7 +40,7 @@ export TESTFILE
 .PHONY: all git-hook localbuild localtest up down build test clean
 .PRECIOUS: $(VERSIONS:%=.docker/emacs-%/Makefile)
 
-all: git-hook localbuild
+all: git-hook
 
 git-hook: $(GIT_HOOKS:%=.git/hooks/%)
 
