@@ -122,48 +122,57 @@ buffers.  The following modes are known:
 
 ;;; Faces
 
-(defface flylint-error-face '((((supports :underline (:style wave)))
-                                :underline (:style wave :color "Red"))
-                               (t
-                                :underline t :inherit error))
+(defface flylint-error-face
+  '((((supports :underline (:style wave)))
+     :underline (:style wave :color "Red"))
+    (t
+     :underline t :inherit error))
   "Flylint face for errors."
   :group 'flylint-faces)
 
-(defface flylint-warning-face '((((supports :underline (:style wave)))
-                                  :underline (:style wave :color "DarkOrange"))
-                                 (t
-                                  :underline t :inherit warning))
+(defface flylint-warning-face
+  '((((supports :underline (:style wave)))
+     :underline (:style wave :color "DarkOrange"))
+    (t
+     :underline t :inherit warning))
   "Flylint face for warnings."
   :group 'flylint-faces)
 
-(defface flylint-info-face '((((supports :underline (:style wave)))
-                               :underline (:style wave :color "ForestGreen"))
-                              (t
-                               :underline t :inherit success))
+(defface flylint-info-face
+  '((((supports :underline (:style wave)))
+     :underline (:style wave :color "ForestGreen"))
+    (t
+     :underline t :inherit success))
   "Flylint face for informational messages."
   :group 'flylint-faces)
 
-(defface flylint-fringe-error-face '((t :inherit error))
+(defface flylint-fringe-error-face
+  '((t :inherit error))
   "Flylint face for fringe error indicators."
   :group 'flylint-faces)
 
-(defface flylint-fringe-warning-face '((t :inherit warning))
+(defface flylint-fringe-warning-face
+  '((t :inherit warning))
   "Flylint face for fringe warning indicators."
   :group 'flylint-faces)
 
-(defface flylint-fringe-info-face '((t :inherit success))
+(defface flylint-fringe-info-face
+  '((t :inherit success))
   "Flylint face for fringe info indicators."
   :group 'flylint-faces)
 
-(defface flylint-error-list-error-face '((t :inherit error))
+(defface flylint-error-list-error-face
+  '((t :inherit error))
   "Flylint face for error messages in the error list."
   :group 'flylint-faces)
 
-(defface flylint-error-list-warning-face '((t :inherit warning))
+(defface flylint-error-list-warning-face
+  '((t :inherit warning))
   "Flylint face for warning messages in the error list."
   :group 'flylint-faces)
 
-(defface flylint-error-list-info-face '((t :inherit success))
+(defface flylint-error-list-info-face
+  '((t :inherit success))
   "Flylint face for info messages in the error list."
   :group 'flylint-faces)
 
@@ -324,11 +333,11 @@ Slots:
                                   'flylint-fringe-double-arrow-bitmap
                                   (flylint--symbol 'fringe-face level))))))
            (region (save-excursion
-                    (save-restriction
-                      (widen)
-                      (goto-char (flylint-error-column err))
-                      (bounds-of-thing-at-point
-                       (or flylint-highlight-elements 'symbol)))))
+                     (save-restriction
+                       (widen)
+                       (goto-char (flylint-error-column err))
+                       (bounds-of-thing-at-point
+                        (or flylint-highlight-elements 'symbol)))))
            (ov     (when region (make-overlay (car region) (cdr region))))
            (level  (flylint-error-level err)))
       (when ov
