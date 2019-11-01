@@ -352,11 +352,20 @@ Slots:
 
 ;;; Main
 
+(defun flylint--setup ()
+  "Setup flylint system.")
+
+(defun flylint--teardown ()
+  "Teardown flylint system.")
+
 ;;;###autoload
 (define-minor-mode flylint-mode
   "Minor mode for asynchronous on-the-fly inspection."
   :keymap flylint-command-map
-  :lighter (:eval (flylint--mode-line-status-text)))
+  :lighter (:eval (flylint--mode-line-status-text))
+  (if flylint-mode
+      (flylint--setup)
+    (flylint--teardown)))
 
 (provide 'flylint)
 
