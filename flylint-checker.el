@@ -94,7 +94,8 @@ See `rx' for a complete list of all built-in `rx' forms."
           rx-constituents nil)))
     (rx-to-string form no-group)))
 
-(cl-defstruct (flylint-checker (:constructor flylint-checker--new))
+(cl-defstruct (flylint-checker (:constructor flylint-checker--new)
+                               (:copier nil))
   "Structure representing parser for each linters.
 Slots:
 

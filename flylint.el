@@ -232,7 +232,8 @@ buffers.  The following modes are known:
                              (line column level message
                                    &key checker category group corrections
                                    (filename (buffer-file-name))
-                                   (buffer (current-buffer)))))
+                                   (buffer (current-buffer))))
+               (:copier nil))
   "Structure representing an error reported by a syntax checker.
 Slots:
 
@@ -275,7 +276,8 @@ Slots:
 (cl-defstruct (flylint-correction
                (:constructor nil)
                (:constructor flylint-correction-new
-                             (beg end replace &key (buffer (current-buffer)))))
+                             (beg end replace &key (buffer (current-buffer))))
+               (:copier nil))
   "Structure representing a recommended correction.
 Slots:
 `beg'

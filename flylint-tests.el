@@ -34,7 +34,7 @@
 ;;; Interactive tests
 
 (defconst flylint-tests-src-dir (file-name-directory
-                           (or load-file-name (buffer-file-name)))
+                                 (or load-file-name (buffer-file-name)))
   "Source directory path of `flylint'.")
 
 (defun flylint-tests-make-error ()
