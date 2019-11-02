@@ -346,6 +346,39 @@ Slots:
     (`error-list-face (intern (format "flylint-error-list-%s-face" target)))
     (_ (error "Call `flylint--symbol' with unkown keyword, %s" kind))))
 
+(defun flylint--add-overlay (err)
+  "Add overlay for ERR."
+  (if (not (flylint-error-p err))
+      (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but not")
+    (let* ((fringe-icon
+            (lambda (level side)
+              (when side
+                (unless (memq side '(left-fringe right-fringe))
+                  (error "Invalid fringe side: %S" side))
+                (propertize "!" 'display
+                            (list side
+                                  'flylint-fringe-double-arrow-bitmap
+                                  (flylint--symbol 'fringe-face level))))))
+           (region (save-excursion
+                     (save-restriction
+                       (widen)
+                       (goto-char (flylint-error-column err))
+                       (bounds-of-thing-at-point
+                        (or flylint-highlight-elements 'symbol)))))
+           (ov     (when region (make-overlay (car region) (cdr region))))
+           (level  (flylint-error-level err)))
+      (when ov
+        (overlay-put ov 'flylint-overlay t)
+        (overlay-put ov 'flylint-error err)
+        (overlay-put ov 'category (flylint--symbol 'ov-category level))
+        (overlay-put ov 'face (when flylint-highlight-elements
+                                (flylint--symbol 'face level)))
+        (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
+        (overlay-put ov 'help-echo (flylint-error-message err))))))
+
+
+;;; Minor-mode support functions
+
 (defun flylint--mode-lighter ()
   "Get a text describing status for use in the mode line."
   (let ((errc 0) (warnc 0))
@@ -378,44 +411,14 @@ But Flylint-mode is not enabled for
                       (apply 'derived-mode-p flylint-disable-modes))))
     (flylint-mode)))
 
-(defun flylint--add-overlay (err)
-  "Add overlay for ERR."
-  (if (not (flylint-error-p err))
-      (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but not")
-    (let* ((fringe-icon
-            (lambda (level side)
-              (when side
-                (unless (memq side '(left-fringe right-fringe))
-                  (error "Invalid fringe side: %S" side))
-                (propertize "!" 'display
-                            (list side
-                                  'flylint-fringe-double-arrow-bitmap
-                                  (flylint--symbol 'fringe-face level))))))
-           (region (save-excursion
-                     (save-restriction
-                       (widen)
-                       (goto-char (flylint-error-column err))
-                       (bounds-of-thing-at-point
-                        (or flylint-highlight-elements 'symbol)))))
-           (ov     (when region (make-overlay (car region) (cdr region))))
-           (level  (flylint-error-level err)))
-      (when ov
-        (overlay-put ov 'flylint-overlay t)
-        (overlay-put ov 'flylint-error err)
-        (overlay-put ov 'category (flylint--symbol 'ov-category level))
-        (overlay-put ov 'face (when flylint-highlight-elements
-                                (flylint--symbol 'face level)))
-        (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
-        (overlay-put ov 'help-echo (flylint-error-message err))))))
-
-
-;;; Main
-
 (defun flylint--setup ()
   "Setup flylint system.")
 
 (defun flylint--teardown ()
   "Teardown flylint system.")
+
+
+;;; Main
 
 ;;;###autoload
 (define-minor-mode flylint-mode
