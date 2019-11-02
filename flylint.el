@@ -346,7 +346,7 @@ Slots:
     (`error-list-face (intern (format "flylint-error-list-%s-face" target)))
     (_ (error "Call `flylint--symbol' with unkown keyword, %s" kind))))
 
-(defun flylint--mode-line-status-text ()
+(defun flylint--mode-lighter ()
   "Get a text describing status for use in the mode line."
   (let ((errc 0) (warnc 0))
     (format " %s:%s/%s" flylint-mode-line-prefix errc warnc)))
@@ -421,7 +421,7 @@ But Flylint-mode is not enabled for
 (define-minor-mode flylint-mode
   "Minor mode for asynchronous on-the-fly inspection."
   :keymap flylint-command-map
-  :lighter (:eval (flylint--mode-line-status-text))
+  :lighter (:eval (flylint--mode-lighter))
   :group 'flylint
   (if flylint-mode
       (flylint--setup)
