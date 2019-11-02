@@ -68,6 +68,38 @@
   :group 'flylint
   :type 'string)
 
+(defcustom flylint-enable-modes t
+  "Modes `flylint-mode' is turned on by `flylint-global-mode'.
+
+If t, Flylint Mode is turned on for all major modes.
+If a list, Flylint Mode is turned on for all `major-mode' symbols.
+
+Only has effect when variable `global-flylint-mode' is non-nil.
+
+NOTE:
+In the first place, it is not enabled for buffers that should not be
+enabled.  See `(elisp)Major Mode Conventions' and `(elisp)Defining
+Minor Modes'"
+  :group 'flylint
+  :type '(choice (const :tag "all" t)
+                 (repeat :tag "mode spesific" symbol)))
+
+(defcustom flylint-disable-modes '(view-mode)
+  "Modes `flylint-mode' is not turned on by `flylint-global-mode'.
+
+If nil, Flylint Mode is not turned on for all major modes.
+If a list, Flylint Mode is not turned on for all `major-mode' symbols.
+
+Only has effect when variable `global-flylint-mode' is non-nil.
+
+NOTE:
+In the first place, it is not enabled for buffers that should not be
+enabled.  See `(elisp)Major Mode Conventions' and `(elisp)Defining
+Minor Modes'"
+  :group 'flylint
+  :type '(choice (const :tag "not disable" nil)
+                 (repeat :tag "mode spesific" symbol)))
+
 (defcustom flylint-indication-fringe 'left-fringe
   "The indication place for Flylint errors and warnings.
 
@@ -319,6 +351,33 @@ Slots:
   (let ((errc 0) (warnc 0))
     (format " %s:%s/%s" flylint-mode-line-prefix errc warnc)))
 
+(defun flylint-mode--maybe ()
+  "Enable `flylint-mode' if it is safe to do so.
+
+Flylint-mode is enabled for
+- major modes listed in `flylint-enable-modes' (if t, enable all)
+
+But Flylint-mode is not enabled for
+- the minibuffer
+- `fundamental-mode'
+- major modes whose `mode-class' property is `special'
+- ephemeral buffers (buffer name starts with space)
+- encrypted buffers (buffer has variable `epa-file-encrypt-to')
+- remote files (see `file-remote-p')
+- major modes listed in `flylint-disable-modes'
+  (if nil, not disable all)"
+  (when (and (or (eq t flylint-enable-modes)
+                 (apply 'derived-mode-p flylint-enable-modes))
+             (not (or (minibufferp)
+                      (eq major-mode 'fundamental-mode)
+                      (eq (get major-mode 'mode-class) 'special)
+                      (string-prefix-p " " (buffer-name))
+                      (local-variable-p 'epa-file-encrypt-to)
+                      (and (buffer-file-name)
+                           (file-remote-p (buffer-file-name) 'method))
+                      (apply 'derived-mode-p flylint-disable-modes))))
+    (flylint-mode)))
+
 (defun flylint--add-overlay (err)
   "Add overlay for ERR."
   (if (not (flylint-error-p err))
@@ -363,9 +422,16 @@ Slots:
   "Minor mode for asynchronous on-the-fly inspection."
   :keymap flylint-command-map
   :lighter (:eval (flylint--mode-line-status-text))
+  :group 'flylint
   (if flylint-mode
       (flylint--setup)
     (flylint--teardown)))
+
+;;;###autoload
+(define-globalized-minor-mode global-flylint-mode flylint-mode
+  flylint-mode--maybe
+  :require 'flylint
+  :group 'flylint)
 
 (provide 'flylint)
 
