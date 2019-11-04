@@ -32,6 +32,7 @@
 
 (require 'cl-lib)
 (require 'async-await)
+(require 'flylint-polyfill)
 (require 'flylint-struct)
 (require 'flylint-option)
 (require 'flylint-face)

@@ -29,6 +29,7 @@
 
 (require 'cl-lib)
 (require 'rx)
+(require 'flylint-polyfill)
 (require 'flylint-struct)
 (require 'flylint-option)
 
