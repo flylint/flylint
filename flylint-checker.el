@@ -29,6 +29,7 @@
 
 (require 'cl-lib)
 (require 'rx)
+(require 'tabulated-list)
 (require 'flylint-polyfill)
 (require 'flylint-struct)
 (require 'flylint-option)
@@ -42,7 +43,46 @@
 ;;; Functions
 
 (defvar flylint-checker-alist nil
-  "Avairable parsers for `flylint-checker'.")
+  "All parsers for `flylint-checker'.")
+
+(define-derived-mode flylint-list-mode tabulated-list-mode "flylint checkers"
+  "Major mode for listing `flylint-list-all-checkers'."
+  (setq-local tabulated-list-sort-key '("Checker" . nil))
+  (setq-local tabulated-list-format [("Checker"     20 t)
+                                     ("Modes"       40 t)
+                                     ("Description" 40 t)])
+  (let ((formatfn (lambda (elm)
+                    (if (stringp elm)
+                        elm
+                      (prin1-to-string (if (eq elm nil) '--- elm))))))
+    (setq-local tabulated-list-entries
+                (cl-loop
+                 for i from 0
+                 for elm in
+                 (cl-loop
+                  for elm in flylint-checker-alist
+                  for sym = (car elm)
+                  for obj = (cdr elm)
+                  for docstring =
+                  (let ((str (flylint-checker-docstring obj)))
+                    (when str
+                      (substring str 0 (or (string-match-p "\n" str)
+                                           (length str)))))
+                  collect `(,sym
+                            ,(flylint-checker-modes obj)
+                            ,docstring))
+                 collect `(,i ,(apply 'vector (mapcar formatfn elm))))))
+  (tabulated-list-print)
+  (tabulated-list-init-header))
+
+;;;###autoload
+(defun flylint-list-all-checkers ()
+  "List all checkers."
+  (interactive)
+  (let ((buf (get-buffer-create "*Flylint Checkers*")))
+    (with-current-buffer buf
+      (flylint-list-mode))
+    (display-buffer buf)))
 
 (defun flylint-checker--rx-file-name (form)
   "Translate the `(file-name)' FORM into a regular expression."
