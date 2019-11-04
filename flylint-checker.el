@@ -126,8 +126,8 @@ NO-GROUP is passed to `rx-to-string'.
 See `rx' for a complete list of all built-in `rx' forms."
   (let ((rx-constituents
          (append
-          `((line . ,(rx (group-n 2 (one-or-more digit))))
-            (column . ,(rx (group-n 3 (one-or-more digit))))
+          `((line . ,(rx-to-string '(group-n 2 (one-or-more digit)) t))
+            (column . ,(rx-to-string '(group-n 3 (one-or-more digit)) t))
             (file-name flylint-checker--rx-file-name 0 nil)
             (message flylint-checker--rx-message 0 nil)
             (id flylint-checker--rx-id 0 nil))
