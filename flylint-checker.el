@@ -29,6 +29,7 @@
 
 (require 'cl-lib)
 (require 'rx)
+(require 'flylint-struct)
 
 (defgroup flylint-checker nil
   "Asynchronous on-the-fly inspection parser."
@@ -93,40 +94,6 @@ See `rx' for a complete list of all built-in `rx' forms."
             (id flylint-checker--rx-id 0 nil))
           rx-constituents nil)))
     (rx-to-string form no-group)))
-
-(cl-defstruct (flylint-checker (:constructor flylint-checker--new)
-                               (:copier nil))
-  "Structure representing parser for each linters.
-Slots:
-
-`name'
-     Parser name, as symbol.
-
-`docstring'
-     Parser description, as string.
-
-`command'
-     Linter command and args, as pair such as (COMMAND . (ARGS ARGS ...)).
-
-`standard-input'
-     Whether the parser uses standard output, as bool.
-
-`working-directory'
-     Working directory for parser, as string.
-
-`error-patterns'
-     Error patterns linter output, as list.
-
-`enabled'
-     Whether parser enabled, as bool.
-
-`modes'
-     What major/minor-mode(s) parser enabled, as list.
-
-`next-chekcers'
-     Next checkers, as list."
-  name docstring command standard-input working-directory
-  error-patterns enabled modes next-checkers)
 
 ;;;###autoload
 (defmacro flylint-checker-define (name &optional docstring &rest args)

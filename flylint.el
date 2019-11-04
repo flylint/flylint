@@ -32,6 +32,7 @@
 
 (require 'cl-lib)
 (require 'async-await)
+(require 'flylint-struct)
 (require 'flylint-face)
 (require 'flylint-checker)
 
@@ -146,76 +147,6 @@ buffers.  The following modes are known:
                  (const :tag "Highlight whole lines" line)
                  (const :tag "Do not highlight errors" nil))
   :safe #'symbolp)
-
-
-;;; Objects
-
-(cl-defstruct (flylint-error
-               (:constructor nil)
-               (:constructor flylint-error-new
-                             (line column level message
-                                   &key checker category group corrections
-                                   (filename (buffer-file-name))
-                                   (buffer (current-buffer))))
-               (:copier nil))
-  "Structure representing an error reported by a syntax checker.
-Slots:
-
-`line'
-     The line number the error refers to, as number.
-
-`column'
-     The column number the error refers to, as number.
-
-`level'
-     The error level, as either `info', `warning' or `error'.
-
-`message'
-     The error message as a string, if any.
-
-`checker'
-     The syntax checker which reported this error, as symbol.
-
-`filename'
-     The file name the error refers to, as string.
-
-`buffer'
-     The buffer that the error was reported for, as buffer object.
-
-`category' (optional)
-     An ID identifying the kind of error.
-
-`group' (optional)
-     A symbol identifying the group the error belongs to.
-
-     Some tools will emit multiple errors that relate to the same
-     issue (e.g., lifetime errors in Rust).  All related errors
-     collected by a checker should have the same `group' value,
-     in order to be able to present them to the user.
-
-`corrections' (optional)
-     Recommend corrections (list of `flylint-correction')."
-  line column level message checker category group filename buffer corrections)
-
-(cl-defstruct (flylint-correction
-               (:constructor nil)
-               (:constructor flylint-correction-new
-                             (beg end replace &key (buffer (current-buffer))))
-               (:copier nil))
-  "Structure representing a recommended correction.
-Slots:
-`beg'
-     The beggining of replacement as point object.
-
-`end'
-     The end of replacement as point object.
-
-`replace'
-     Replace string as string.
-
-`buffer'
-     Target buffer as buffer object."
-  beg end replace buffer)
 
 
 ;;; Functions
