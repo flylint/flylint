@@ -130,5 +130,24 @@ buffers.  The following modes are known:
                  (const :tag "Do not highlight errors" nil))
   :safe #'symbolp)
 
+(defcustom flylint-global-disable-checkers nil
+  "Syntax checkers excluded from automatic selection.
+
+A list of Flylint syntax checkers to exclude from automatic
+selection.  Flylint will never automatically select a syntax
+checker in this list, regardless of the value of
+`flylint-checkers'.
+
+However, syntax checkers in this list are still available for
+manual selection with `flylint-select-checker'.
+
+Use this variable to disable syntax checkers, instead of removing
+the syntax checkers from `flylint-checkers'.  You may also use
+this option as a file or directory local variable to disable
+specific checkers in individual files and directories
+respectively."
+  :group 'flylint
+  :type '(repeat (symbol :tag "Checker")))
+
 (provide 'flylint-option)
 ;;; flylint-option.el ends here

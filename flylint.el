@@ -80,13 +80,40 @@
   "Get avairable checkers for BUF.
 If omit BUF, return avairable checkers for `current-buffer'."
   (with-current-buffer (or buf (current-buffer))
-    flylint-checker-alist))
+    (mapcar 'car
+            (cl-remove-if-not
+             (lambda (elm)
+               (pcase-let ((`(_sym . ,obj) elm))
+                 (let ((modes (flylint-checker-modes obj))
+                       (_fn   (flylint-checker-enabled obj)))
+                   (apply #'derived-mode-p modes))))
+             flylint-checker-alist))))
+
+(defun flylint--avairable-checkers* (&optional buf)
+  "Get avairable checkers for BUF and considering :enabled.
+If omit BUF, return avairable checkers for `current-buffer'."
+  (with-current-buffer (or buf (current-buffer))
+    (mapcar 'car
+            (cl-remove-if-not
+             (lambda (elm)
+               (pcase-let ((`(,_sym . ,obj) elm))
+                 (let ((modes (flylint-checker-modes obj))
+                       (fn    (flylint-checker-enabled obj)))
+                   (and (apply #'derived-mode-p modes)
+                        (and fn (funcall fn))))))
+             flylint-checker-alist))))
 
 
 ;;; Minor-mode support functions / variables
 
-(defvar-local flylint-enable-checkers nil
-  "Syntax checker to use for the current buffer.")
+(defvar-local flylint-enabled-checkers nil
+  "Syntax checkers to enabled for the current buffer.")
+
+(defvar-local flylint-disabled-checkers nil
+  "Syntax checkers to disabled for the current buffer.")
+
+(defvar-local flylint-auto-disabled-checkers nil
+  "syntax checkers to disabled for the current buffer.")
 
 (defun flylint--mode-lighter ()
   "Get a text describing status for use in the mode line."
@@ -122,7 +149,13 @@ But Flylint-mode is not enabled for
 
 (defun flylint--setup ()
   "Setup flylint system."
-  (setq-local flylint-enable-checkers (flylint--avairable-checkers)))
+  (setq-local flylint-enabled-checkers (cl-set-difference
+                                        (flylint--avairable-checkers*)
+                                        flylint-global-disable-checkers))
+  (setq-local flylint-auto-disabled-checkers (cl-set-difference
+                                              (flylint--avairable-checkers)
+                                              flylint-enabled-checkers))
+  (setq-local flylint-disabled-checkers flylint-auto-disabled-checkers))
 
 (defun flylint--teardown ()
   "Teardown flylint system.")
