@@ -30,14 +30,12 @@
 (require 'cl-lib)
 (require 'rx)
 (require 'flylint-struct)
+(require 'flylint-option)
 
 (defgroup flylint-checker nil
   "Asynchronous on-the-fly inspection parser."
   :prefix "flylint-checker"
   :group 'tools)
-
-
-;;; Options
 
 
 ;;; Functions
