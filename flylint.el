@@ -164,6 +164,18 @@ But Flylint-mode is not enabled for
 
 ;;; Main
 
+(declare-function pkg-info-version-info "pkg-info")
+
+;;;###autoload
+(defun flylint-version ()
+  "Get the Flylint version as string.
+If called interactively, show the version in the echo area."
+  (interactive)
+  (let ((version (pkg-info-version-info 'flylint)))
+    (if (called-interactively-p 'interactive)
+        (message "Flylint version: %s" version)
+      version)))
+
 ;;;###autoload
 (define-minor-mode flylint-mode
   "Minor mode for asynchronous on-the-fly inspection."
