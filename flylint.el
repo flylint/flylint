@@ -376,8 +376,17 @@ Slots:
         (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
         (overlay-put ov 'help-echo (flylint-error-message err))))))
 
+(defun flylint--avairable-checkers (&optional buf)
+  "Get avairable checkers for BUF.
+If omit BUF, return avairable checkers for `current-buffer'."
+  (with-current-buffer (or buf (current-buffer))
+    flylint-checker-alist))
+
 
-;;; Minor-mode support functions
+;;; Minor-mode support functions / variables
+
+(defvar-local flylint-enable-checkers nil
+  "Syntax checker to use for the current buffer.")
 
 (defun flylint--mode-lighter ()
   "Get a text describing status for use in the mode line."
@@ -412,7 +421,8 @@ But Flylint-mode is not enabled for
     (flylint-mode)))
 
 (defun flylint--setup ()
-  "Setup flylint system.")
+  "Setup flylint system."
+  (setq-local flylint-enable-checkers (flylint--avairable-checkers)))
 
 (defun flylint--teardown ()
   "Teardown flylint system.")
