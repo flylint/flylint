@@ -141,7 +141,7 @@ DOCSTRING is an optional documentation string.
 ARGS is a list of KEY VALUE pairs, described `flylint-checker'.
 
 \(fn NAME [DOCSTRING] &key COMMAND STANDARD-INPUT WORKING-DIRECTORY
-ERROR-PATTERNS ENABLED MODES NEXT-CHECKERS)"
+ERROR-PATTERNS ENABLED MODES)"
   (declare (indent defun) (doc-string 2))
   (unless (stringp docstring)
     (setq args (append (list docstring) args))
@@ -149,8 +149,7 @@ ERROR-PATTERNS ENABLED MODES NEXT-CHECKERS)"
   (setq args (append (list :name name :docstring docstring) args))
   (let* ((keywords (list :name :docstring :command
                          :standard-input :working-directory
-                         :error-patterns :enabled :modes
-                         :next-checkers))
+                         :error-patterns :enabled :modes))
          (fn (lambda (elm)
                (if (and (listp elm)
                         (member `',(car elm)

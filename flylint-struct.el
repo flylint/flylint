@@ -125,12 +125,9 @@ Slots:
      Whether parser enabled, as bool.
 
 `modes'
-     What major/minor-mode(s) parser enabled, as list.
-
-`next-chekcers'
-     Next checkers, as list."
+     What major/minor-mode(s) parser enabled, as list."
   name docstring command standard-input working-directory
-  error-patterns enabled modes next-checkers)
+  error-patterns enabled modes)
 
 (provide 'flylint-struct)
 ;;; flylint-struct.el ends here
