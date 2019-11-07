@@ -47,6 +47,8 @@
 
 ;;; Functions
 
+(defvar flylint-mode)
+
 (defun flylint--add-overlay (err)
   "Add overlay for ERR."
   (if (not (flylint-error-p err))
@@ -104,6 +106,28 @@ If omit BUF, return avairable checkers for `current-buffer'."
                         (and fn (funcall fn))))))
              flylint-checker-alist))))
 
+(defun flylint--run-checkers (condition)
+  "Run checkers when CONDITION."
+  (cond
+   ((eq 'save condition))
+   ((eq 'new-line condition))
+   ((eq 'change condition))
+   ((eq 'mode-enabled condition))))
+
+(defun flylint--handle-save ()
+  "Handle a buffer save."
+  (flylint--run-checkers 'save))
+
+(defun flylint--handle-change (beg end _len)
+  "Handle a buffer change between BEG to END.
+BEG and END is mark at beggning and end change text.
+_LEN is ignored.
+Start a sntax check if newline has inserted into the buffer."
+  (when flylint-mode
+    (if (string-match-p "\n" (buffer-substring beg end))
+        (flylint--run-checkers 'new-line)
+      (flylint--run-checkers 'change))))
+
 
 ;;; Minor-mode support functions / variables
 
@@ -148,6 +172,42 @@ But Flylint-mode is not enabled for
                       (apply 'derived-mode-p flylint-disable-modes))))
     (flylint-mode)))
 
+(defvar flylint-hooks-alist
+  '(;; Handle events that may start automatic syntax checks
+    (after-save-hook        . flylint--handle-save)
+    (after-change-functions . flylint--handle-change)
+
+    ;; Handle events that may triggered pending deferred checks
+    ;; (window-configuration-change-hook . flylint-perform-deferred-syntax-check)
+    ;; (post-command-hook                . flylint-perform-deferred-syntax-check)
+
+    ;; Teardown Flylint whenever the buffer state is about to get lost, to
+    ;; clean up temporary files and directories.
+    (kill-buffer-hook       . flylint--teardown)
+    (change-major-mode-hook . flylint--teardown)
+    (before-revert-hook     . flylint--teardown)
+
+    ;; Update the error list if necessary
+    ;; (post-command-hook . flylint-error-list-update-source)
+    ;; (post-command-hook . flylint-error-list-highlight-errors)
+
+    ;; Display errors.  Show errors at point after commands (like movements) and
+    ;; when Emacs gets focus.  Cancel the display timer when Emacs looses focus
+    ;; (as there's no need to display errors if the user can't see them), and
+    ;; hide the error buffer (for large error messages) if necessary.  Note that
+    ;; the focus hooks only work on Emacs 24.4 and upwards, but since undefined
+    ;; hooks are perfectly ok we don't need a version guard here.  They'll just
+    ;; not work silently.
+    ;; (post-command-hook . flylint-display-error-at-point-soon)
+    ;; (focus-in-hook     . flylint-display-error-at-point-soon)
+    ;; (focus-out-hook    . flylint-cancel-error-display-error-at-point-timer)
+    ;; (post-command-hook . flylint-hide-error-buffer)
+
+    ;; Immediately show error popups when navigating to an error
+    ;; (next-error-hook . flylint-display-error-at-point)
+    )
+  "Hooks which Flylint needs to hook in.")
+
 (defun flylint--setup ()
   "Setup flylint system."
   (setq-local flylint-enabled-checkers (cl-set-difference
@@ -156,10 +216,14 @@ But Flylint-mode is not enabled for
   (setq-local flylint-auto-disabled-checkers (cl-set-difference
                                               (flylint--avairable-checkers)
                                               flylint-enabled-checkers))
-  (setq-local flylint-disabled-checkers flylint-auto-disabled-checkers))
+  (setq-local flylint-disabled-checkers flylint-auto-disabled-checkers)
+  (pcase-dolist (`(,hook . ,fn) flylint-hooks-alist)
+    (add-hook hook fn nil 'local)))
 
 (defun flylint--teardown ()
-  "Teardown flylint system.")
+  "Teardown flylint system."
+  (pcase-dolist (`(,hook . ,fn) flylint-hooks-alist)
+    (remove-hook hook fn 'local)))
 
 
 ;;; Main
@@ -183,7 +247,9 @@ If called interactively, show the version in the echo area."
   :lighter (:eval (flylint--mode-lighter))
   :group 'flylint
   (if flylint-mode
-      (flylint--setup)
+      (progn
+        (flylint--setup)
+        (flylint--run-checkers 'mode-enabled))
     (flylint--teardown)))
 
 ;;;###autoload
