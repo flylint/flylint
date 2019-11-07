@@ -51,6 +51,7 @@
 (defvar flylint-enabled-checkers)
 (defvar flylint-disabled-checkers)
 (defvar flylint-auto-disabled-checkers)
+(defvar flylint-running)
 
 (defun flylint--add-overlay (err)
   "Add overlay for ERR."
@@ -111,7 +112,7 @@ If omit BUF, return avairable checkers for `current-buffer'."
 
 (defun flylint--running-p ()
   "Return non-nil if flylint running."
-  nil)
+  flylint-running)
 
 (async-defun flylint--run (checker)
   "Run CHECKER async."
@@ -135,9 +136,11 @@ see `flylint-check-syntax-triger'."
        ((or (funcall condition 'save triger)
             (funcall condition 'new-line triger)
             (funcall condition 'mode-enabled triger))
+        (setq-local flylint-running t)
         (dolist (elm flylint-enabled-checkers)
           (flylint--run elm)))
-       ((funcall condition 'change triger))))))
+       ((funcall condition 'change triger)))))
+  (setq-local flylint-running nil))
 
 (defun flylint--handle-save ()
   "Handle a buffer save."
@@ -164,6 +167,9 @@ Start a sntax check if newline has inserted into the buffer."
 
 (defvar-local flylint-auto-disabled-checkers nil
   "syntax checkers to disabled for the current buffer.")
+
+(defvar-local flylint-running nil
+  "Non-nil if flylint running.")
 
 (defun flylint--mode-lighter ()
   "Get a text describing status for use in the mode line."
@@ -235,6 +241,7 @@ But Flylint-mode is not enabled for
 
 (defun flylint--setup ()
   "Setup flylint system."
+  (setq-local flylint-running nil)
   (setq-local flylint-enabled-checkers (cl-set-difference
                                         (flylint--avairable-checkers*)
                                         flylint-global-disable-checkers))
