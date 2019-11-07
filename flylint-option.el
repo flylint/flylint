@@ -150,4 +150,9 @@ respectively."
   :type '(repeat (symbol :tag "Checker")))
 
 (provide 'flylint-option)
+
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
+
 ;;; flylint-option.el ends here

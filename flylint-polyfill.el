@@ -38,4 +38,9 @@
   (mapcar 'cdr alist))
 
 (provide 'flylint-polyfill)
+
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
+
 ;;; flylint-polyfill.el ends here

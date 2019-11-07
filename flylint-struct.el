@@ -130,4 +130,9 @@ Slots:
   error-patterns enabled modes)
 
 (provide 'flylint-struct)
+
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
+
 ;;; flylint-struct.el ends here

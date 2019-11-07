@@ -156,4 +156,9 @@
 
 
 (provide 'flylint-face)
+
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
+
 ;;; flylint-face.el ends here
