@@ -149,6 +149,55 @@ respectively."
   :group 'flylint
   :type '(repeat (symbol :tag "Checker")))
 
+(defcustom flylint-triger-change-delay 0.5
+  "How many seconds to wait after a change before checking syntax.
+
+After the buffer was changed, Flylint will wait as many seconds
+as the value of this variable before starting a syntax check.  If
+the buffer is modified during this time, Flylint will wait
+again.
+
+This variable has no effect, if `change' is not contained in
+`flylint-check-syntax-triger'."
+  :group 'flylint
+  :type 'number)
+
+(defcustom flylint-check-syntax-triger (list 'save 'change
+                                             'new-line 'mode-enabled)
+  "When Flylint should check syntax automatically.
+
+This variable is a list of events that may trigger syntax checks.
+The following events are known:
+
+`save'
+     Check syntax immediately after the buffer was saved.
+
+`change'
+     Check syntax a short time (see `flylint-triger-change-delay')
+     after the last change to the buffer.
+
+`new-line'
+     Check syntax immediately after a new line was inserted into
+     the buffer.
+
+`mode-enabled'
+     Check syntax immediately when variable `flylint-mode' is
+     non-nil.
+
+Flylint performs a syntax checks only on events, which are
+contained in this list.  For instance, if the value of this
+variable is `(mode-enabled save)', Flylint will only check if
+the mode is enabled or the buffer was saved, but never after
+changes to the buffer contents.
+
+If nil, never check syntax automatically.  In this case, use
+`flylint-buffer' to start a syntax check manually."
+  :group 'flylint
+  :type '(set (const :tag "After the buffer was saved" save)
+              (const :tag "After the buffer was changed and idle" change)
+              (const :tag "After a new line was inserted" new-line)
+              (const :tag "After `flylint-mode' was enabled" mode-enabled)))
+
 (provide 'flylint-option)
 
 ;; Local Variables:
