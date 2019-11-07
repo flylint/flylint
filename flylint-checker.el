@@ -171,8 +171,8 @@ ERROR-PATTERNS ENABLED MODES)"
                                  ',val*))
                  else do (setq val* `',val*)
                  append `(,key* ,val*))))
-    `(push (cons ',name (flylint-checker--new ,@args*))
-           flylint-checker-alist)))
+    `(setf (alist-get ',name flylint-checker-alist)
+           (flylint-checker--new ,@args*))))
 
 (defconst flylint-checker-font-lock-keywords
   '(("(\\(flylint-checker-define\\)\\_>[ \t']*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
