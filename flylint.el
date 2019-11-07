@@ -48,6 +48,9 @@
 ;;; Functions
 
 (defvar flylint-mode)
+(defvar flylint-enabled-checkers)
+(defvar flylint-disabled-checkers)
+(defvar flylint-auto-disabled-checkers)
 
 (defun flylint--add-overlay (err)
   "Add overlay for ERR."
@@ -106,13 +109,35 @@ If omit BUF, return avairable checkers for `current-buffer'."
                         (and fn (funcall fn))))))
              flylint-checker-alist))))
 
-(defun flylint--run-checkers (condition)
-  "Run checkers when CONDITION."
-  (cond
-   ((eq 'save condition))
-   ((eq 'new-line condition))
-   ((eq 'change condition))
-   ((eq 'mode-enabled condition))))
+(defun flylint--running-p ()
+  "Return non-nil if flylint running."
+  nil)
+
+(async-defun flylint--run (checker)
+  "Run CHECKER async."
+  (let ((checker* (alist-get checker flylint-checker-alist)))
+    (when checker*
+      (let ((res (await (promise-race
+                         (vector
+                          (promise:time-out 10 'timeout)
+                          (apply #'promise:make-process
+                                 (flylint-checker-command checker*)))))))
+        (unless (eq res 'timeout))))))
+
+(defun flylint--run-checkers (triger)
+  "Run checkers with TRIGER.
+see `flylint-check-syntax-triger'."
+  (and flylint-mode (not (flylint--running-p))
+    (let ((condition (lambda (elm triger)
+                       (and (eq elm triger)
+                            (memq elm flylint-check-syntax-triger)))))
+      (cond
+       ((or (funcall condition 'save triger)
+            (funcall condition 'new-line triger)
+            (funcall condition 'mode-enabled triger))
+        (dolist (elm flylint-enabled-checkers)
+          (flylint--run elm)))
+       ((funcall condition 'change triger))))))
 
 (defun flylint--handle-save ()
   "Handle a buffer save."
