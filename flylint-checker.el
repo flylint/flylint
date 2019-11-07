@@ -189,7 +189,14 @@ ERROR-PATTERNS ENABLED MODES)"
   "A C/C++ syntax checker using GCC.
 Requires GCC 4.4 or newer.  See URL `https://gcc.gnu.org/'."
   :command ("gcc"
-            "-Wall" "-Wextra")
+            "-Wall" "-Wextra"
+            "-x" "c++"
+            ;; GCC performs full checking only when actually compiling, so
+            ;; `-fsyntax-only' is not enough. Just let it generate assembly
+            ;; code.
+            "-S" "-o" "/dev/null"
+            ;; Read from standard input
+            "-")
   :standard-input t
   :error-patterns
   ((info    . (line-start (or "<stdin>" (file-name)) ":" line ":" column
