@@ -123,6 +123,26 @@ Sample:
     (error
      (message "error!\n%s" err))))
 
+(async-defun flylint-tests-get-sample-linter-buffer (buf)
+  "Get sample linter output from BUF.
+
+Sample:
+  (flylint-tests-get-sample-linter-buffer \"main.cpp\")"
+  (condition-case err
+       (let ((res (await (promise-race
+                          (vector
+                           (promise:time-out 5 "timeout")
+                           (promise:make-process-with-buffer-string
+                            "gcc" buf
+                            "-x" "c++" "-"))))))
+         (with-current-buffer "*async*"
+           (insert "done!!\n")
+           (insert (pp-to-string res))))
+     (error
+      (with-current-buffer "*async*"
+        (insert "error!!\n")
+        (insert (pp-to-string err))))))
+
 (flylint-checker-define c/gcc-sample
   "A sumple parser for gcc sample."
   :command `(,(expand-file-name "scripts/c-gcc-sample-raw.sh" flylint-tests-src-dir))
