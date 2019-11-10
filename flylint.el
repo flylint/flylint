@@ -478,17 +478,17 @@ Start a sntax check if newline has inserted into the buffer."
   "Enable `flylint-mode' if it is safe to do so.
 
 Flylint-mode is enabled for
-- major modes listed in `flylint-enable-modes' (if t, enable all)
+  - major modes listed in `flylint-enable-modes' (if t, enable all)
 
 But Flylint-mode is not enabled for
-- the minibuffer
-- `fundamental-mode'
-- major modes whose `mode-class' property is `special'
-- ephemeral buffers (buffer name starts with space)
-- encrypted buffers (buffer has variable `epa-file-encrypt-to')
-- remote files (see `file-remote-p')
-- major modes listed in `flylint-disable-modes'
-  (if nil, not disable all)"
+  - the minibuffer
+  - `fundamental-mode'
+  - major modes whose `mode-class' property is `special'
+  - ephemeral buffers (buffer name starts with space)
+  - encrypted buffers (buffer has variable `epa-file-encrypt-to')
+  - remote files (see `file-remote-p')
+  - major modes listed in `flylint-disable-modes'
+    (if nil, not disable all)"
   (when (and (or (eq t flylint-enable-modes)
                  (apply 'derived-mode-p flylint-enable-modes))
              (not (or (minibufferp)
