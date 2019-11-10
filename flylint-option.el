@@ -198,6 +198,29 @@ If nil, never check syntax automatically.  In this case, use
               (const :tag "After a new line was inserted" new-line)
               (const :tag "After `flylint-mode' was enabled" mode-enabled)))
 
+(defcustom flylint-temp-prefix "flylint"
+  "Prefix for temporary files created by Flylint."
+  :group 'flylint
+  :type 'string)
+
+(defcustom flylint-locate-config-file-functions nil
+  "Functions to locate syntax checker configuration files.
+
+Each function in this hook must accept two arguments: The value
+of the configuration file variable, and the syntax checker
+symbol.  It must return either a string with an absolute path to
+the configuration file, or nil, if it cannot locate the
+configuration file.
+
+The functions in this hook are called in order of appearance, until a
+function returns non-nil.  The configuration file returned by that
+function is then given to the syntax checker if it exists.
+
+This variable is an abnormal hook.  See Info
+node `(elisp)Hooks'."
+  :group 'flylint
+  :type 'hook)
+
 (provide 'flylint-option)
 
 ;; Local Variables:

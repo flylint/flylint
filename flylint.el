@@ -51,6 +51,7 @@
 (defvar flylint-enabled-checkers)
 (defvar flylint-disabled-checkers)
 (defvar flylint-auto-disabled-checkers)
+(defvar flylint-temporaries)
 (defvar flylint-running)
 
 (defun flylint--add-overlay (err)
@@ -114,6 +115,304 @@ If omit BUF, return avairable checkers for `current-buffer'."
   "Return non-nil if flylint running."
   flylint-running)
 
+(defun flylint--save-buffer-to-temp (temp-file-fn)
+  "Save buffer to temp file returned by TEMP-FILE-FN.
+
+Return the name of the temporary file."
+  (let ((filename (funcall temp-file-fn (buffer-file-name))))
+    ;; Do not flush short-lived temporary files onto disk
+    (let ((write-region-inhibit-fsync t))
+      (flylint--save-buffer-to-file filename))
+    filename))
+
+(defun flylint--temp-file-system (filename)
+  "Create a temporary file named after FILENAME.
+
+If FILENAME is non-nil, this function creates a temporary
+directory with `flylint--temp-dir-system', and creates a file
+with the same name as FILENAME in this directory.
+
+Otherwise this function creates a temporary file with
+`flylint-temp-prefix' and a random suffix.  The path of the file
+is added to `flylint-temporaries'.
+
+Return the path of the file."
+  (let ((tempfile (convert-standard-filename
+                   (if filename
+                       (expand-file-name (file-name-nondirectory filename)
+                                         (flylint--temp-dir-system))
+                     (make-temp-file flylint-temp-prefix)))))
+    (push tempfile flylint-temporaries)
+    tempfile))
+
+(defun flylint--temp-file-inplace (filename)
+  "Create an in-place copy of FILENAME.
+
+Prefix the file with `flylint-temp-prefix' and add the path of
+the file to `flylint-temporaries'.
+
+If FILENAME is nil, fall back to `flylint--temp-file-system'.
+
+Return the path of the file."
+  (if filename
+      (let* ((tempname (format "%s_%s"
+                               flylint-temp-prefix
+                               (file-name-nondirectory filename)))
+             (tempfile (convert-standard-filename
+                        (expand-file-name tempname
+                                          (file-name-directory filename)))))
+        (push tempfile flylint-temporaries)
+        tempfile)
+    (flylint--temp-file-system filename)))
+
+(defun flylint--temp-dir-system ()
+  "Create a unique temporary directory.
+
+Use `flylint-temp-prefix' as prefix, and add the directory to
+`flylint-temporaries'.
+
+Return the path of the directory"
+  (let* ((tempdir (make-temp-file flylint-temp-prefix 'directory)))
+    (push tempdir flylint-temporaries)
+    tempdir))
+
+(defun flylint--locate-config-file (filename checker)
+  "Locate the configuration file FILENAME for CHECKER.
+
+Locate the configuration file using
+`flylint--locate-config-file-functions'.
+
+Return the absolute path of the configuration file, or nil if no
+configuration file was found."
+  (let ((filepath
+         (run-hook-with-args-until-success 'flylint--locate-config-file-functions filename checker)))
+    (if filepath
+        (when (file-exists-p filepath)
+          filepath))))
+
+(defun flylint--prepend-with-option (option items &optional prepend-fn)
+  "Prepend OPTION to each item in ITEMS, using PREPEND-FN.
+
+Prepend OPTION to each item in ITEMS.
+
+ITEMS is a list of strings to pass to the syntax checker.  OPTION
+is the option, as string.  PREPEND-FN is a function called to
+prepend OPTION to each item in ITEMS.  It receives the option and
+a single item from ITEMS as argument, and must return a string or
+a list of strings with OPTION prepended to the item.  If
+PREPEND-FN is nil or omitted, use `list'.
+
+Return a list of strings where OPTION is prepended to each item
+in ITEMS using PREPEND-FN.  If PREPEND-FN returns a list, it is
+spliced into the resulting list."
+  (unless (stringp option)
+    (error "Option %S is not a string" option))
+  (unless prepend-fn
+    (setq prepend-fn #'list))
+  (let ((prepend
+         (lambda (item)
+           (let ((result (funcall prepend-fn option item)))
+             (cond
+              ((and (listp result) (seq-every-p #'stringp result)) result)
+              ((stringp result) (list result))
+              (t (error "Invalid result type for option: %S" result)))))))
+    (apply #'append (seq-map prepend items))))
+
+(defun flylint--save-buffer-to-file (filename)
+  "Save the contents of the current buffer to FILENAME."
+  (make-directory (file-name-directory filename) t)
+  (let ((jka-compr-inhibit t))
+    (write-region nil nil filename nil 0)))
+
+(defun flylint--interpret-sexp (sexp &optional checker)
+  "Interpret SEXP.
+
+SEXP may be one of the following forms:
+
+STRING
+     Return ARG unchanged.
+
+`source', `source-inplace'
+     Create a temporary file to check and return its path.  With
+     `source-inplace' create the temporary file in the same
+     directory as the original file.  The value of
+     `flylint-temp-prefix' is used as prefix of the file name.
+
+     With `source', try to retain the non-directory component of
+     the buffer's file name in the temporary file.
+
+     `source' is the preferred way to pass the input file to a
+     syntax checker.  `source-inplace' should only be used if the
+     syntax checker needs other files from the source directory,
+     such as include files in C.
+
+`source-original'
+     Return the path of the actual file to check, or an empty
+     string if the buffer has no file name.
+
+     Note that the contents of the file may not be up to date
+     with the contents of the buffer to check.  Do not use this
+     as primary input to a checker, unless absolutely necessary.
+
+     When using this symbol as primary input to the syntax
+     checker, add `flylint-buffer-saved-p' to the `:predicate'.
+
+`temporary-directory'
+     Create a unique temporary directory and return its path.
+
+`temporary-file-name'
+     Return a unique temporary filename.  The file is *not*
+     created.
+
+     To ignore the output of syntax checkers, try `null-device'
+     first.
+
+`null-device'
+     Return the value of `null-device', i.e the system null
+     device.
+
+     Use this option to ignore the output of a syntax checker.
+     If the syntax checker cannot handle the null device, or
+     won't write to an existing file, try `temporary-file-name'
+     instead.
+
+`(config-file OPTION VARIABLE [PREPEND-FN])'
+     Search the configuration file bound to VARIABLE with
+     `flylint--locate-config-file' and return a list of arguments
+     that pass this configuration file to the syntax checker, or
+     nil if the configuration file was not found.
+
+     PREPEND-FN is called with the OPTION and the located
+     configuration file, and should return OPTION prepended
+     before the file, either a string or as list.  If omitted,
+     PREPEND-FN defaults to `list'.
+
+`(option OPTION VARIABLE [PREPEND-FN [FILTER]])'
+     Retrieve the value of VARIABLE and return a list of
+     arguments that pass this value as value for OPTION to the
+     syntax checker.
+
+     PREPEND-FN is called with the OPTION and the value of
+     VARIABLE, and should return OPTION prepended before the
+     file, either a string or as list.  If omitted, PREPEND-FN
+     defaults to `list'.
+
+     FILTER is an optional function to be applied to the value of
+     VARIABLE before prepending.  This function must return nil
+     or a string.  In the former case, return nil.  In the latter
+     case, return a list of arguments as described above.
+
+`(option-list OPTION VARIABLE [PREPEND-FN [FILTER]])'
+     Retrieve the value of VARIABLE, which must be a list,
+     and prepend OPTION before each item in this list, using
+     PREPEND-FN.
+
+     PREPEND-FN is called with the OPTION and each item of the
+     list as second argument, and should return OPTION prepended
+     before the item, either as string or as list.  If omitted,
+     PREPEND-FN defaults to `list'.
+
+     FILTER is an optional function to be applied to each item in
+     the list before prepending OPTION.  It shall return the
+     option value for each item as string, or nil, if the item is
+     to be ignored.
+
+`(option-flag OPTION VARIABLE)'
+     Retrieve the value of VARIABLE and return OPTION, if the
+     value is non-nil.  Otherwise return nil.
+
+`(eval FORM)'
+     Return the result of evaluating FORM in the buffer to be
+     checked.  FORM must either return a string or a list of
+     strings, or nil to indicate that nothing should be
+     substituted for CELL.  For all other return types, signal an
+     error
+
+     _No_ further substitutions are performed, neither in FORM
+     before it is evaluated, nor in the result of evaluating
+     FORM.
+
+In all other cases, signal an error.
+
+Note that substitution is *not* recursive.  No symbols or cells
+are substituted within the body of cells!"
+  (let ((fn (lambda (elm)
+              (pcase elm
+                ((pred stringp) (list elm))
+                (`source
+                 (list (flylint--save-buffer-to-temp #'flylint--temp-file-system)))
+                (`source-inplace
+                 (list (flylint--save-buffer-to-temp #'flylint--temp-file-inplace)))
+                (`source-original (list (or (buffer-file-name) "")))
+                (`temporary-directory (list (flylint--temp-dir-system)))
+                (`temporary-file-name
+                 (let ((directory (flylint--temp-dir-system)))
+                   (list (make-temp-name (expand-file-name "flylint" directory)))))
+                (`null-device (list null-device))
+                (`(config-file ,option-name ,file-name-var)
+                 (let ((value (symbol-value file-name-var)))
+                   (when value
+                     (let ((file-name (flylint--locate-config-file value checker)))
+                       (when file-name
+                         (flylint--prepend-with-option
+                          option-name (list file-name)))))))
+                (`(config-file ,option-name ,file-name-var ,prepend-fn)
+                 (let ((value (symbol-value file-name-var)))
+                   (when value
+                     (let ((file-name (flylint--locate-config-file value checker)))
+                       (when file-name
+                         (flylint--prepend-with-option
+                          option-name (list file-name) prepend-fn))))))
+                (`(option ,option-name ,variable)
+                 (let ((value (symbol-value variable)))
+                   (when value
+                     (unless (stringp value)
+                       (error "Value %S of %S for option %s is not a string" value variable option-name))
+                     (flylint--prepend-with-option option-name (list value)))))
+                (`(option ,option-name ,variable ,prepend-fn)
+                 (let ((value (symbol-value variable)))
+                   (when value
+                     (unless (stringp value)
+                       (error "Value %S of %S for option %s is not a string" value variable option-name))
+                     (flylint--prepend-with-option
+                      option-name (list value) prepend-fn))))
+                (`(option ,option-name ,variable ,prepend-fn ,filter)
+                 (let ((value (funcall filter (symbol-value variable))))
+                   (when value
+                     (unless (stringp value)
+                       (error "Value %S of %S (filter: %S) for option %s is not a string" value variable filter option-name))
+                     (flylint--prepend-with-option
+                      option-name (list value) prepend-fn))))
+                (`(option-list ,option-name ,variable)
+                 (let ((value (symbol-value variable)))
+                   (unless (and (listp value) (seq-every-p #'stringp value))
+                     (error "Value %S of %S for option %S is not a list of strings"
+                            value variable option-name))
+                   (flylint--prepend-with-option option-name value)))
+                (`(option-list ,option-name ,variable ,prepend-fn)
+                 (let ((value (symbol-value variable)))
+                   (unless (and (listp value) (seq-every-p #'stringp value))
+                     (error "Value %S of %S for option %S is not a list of strings"
+                            value variable option-name))
+                   (flylint--prepend-with-option option-name value prepend-fn)))
+                (`(option-list ,option-name ,variable ,prepend-fn ,filter)
+                 (let ((value (delq nil (seq-map filter (symbol-value variable)))))
+                   (unless (and (listp value) (seq-every-p #'stringp value))
+                     (error "Value %S of %S for option %S is not a list of strings"
+                            value variable option-name))
+                   (flylint--prepend-with-option option-name value prepend-fn)))
+                (`(option-flag ,option-name ,variable)
+                 (when (symbol-value variable)
+                   (list option-name)))
+                (`(eval ,form)
+                 (let ((result (eval form)))
+                   (cond
+                    ((and (listp result) (seq-every-p #'stringp result)) result)
+                    ((stringp result) (list result))
+                    (t (error "Invalid result from evaluation of %S: %S" form result)))))
+                (_ (error "Unsupported argument %S" elm))))))
+    (mapcan fn sexp)))
+
 (async-defun flylint--run (checker)
   "Run CHECKER async."
   (let ((checker* (alist-get checker flylint-checker-alist)))
@@ -167,6 +466,9 @@ Start a sntax check if newline has inserted into the buffer."
 
 (defvar-local flylint-auto-disabled-checkers nil
   "syntax checkers to disabled for the current buffer.")
+
+(defvar-local flylint-temporaries nil
+  "Temporary files and directories created by Flylint.")
 
 (defvar-local flylint-running nil
   "Non-nil if flylint running.")
