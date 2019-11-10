@@ -216,8 +216,7 @@ The functions in this hook are called in order of appearance, until a
 function returns non-nil.  The configuration file returned by that
 function is then given to the syntax checker if it exists.
 
-This variable is an abnormal hook.  See Info
-node `(elisp)Hooks'."
+This variable is an abnormal hook.  See Info node `(elisp)Hooks'."
   :group 'flylint
   :type 'hook)
 
