@@ -91,9 +91,9 @@ If omit BUF, return avairable checkers for `current-buffer'."
     (mapcar 'car
             (cl-remove-if-not
              (lambda (elm)
-               (pcase-let ((`(_sym . ,obj) elm))
-                 (let ((modes (flylint-checker-modes obj))
-                       (_fn   (flylint-checker-enabled obj)))
+               (pcase-let ((`(_sym . ,checker) elm))
+                 (let ((modes (flylint-checker-modes checker))
+                       (_fn   (flylint-checker-enabled checker)))
                    (apply #'derived-mode-p modes))))
              flylint-checker-alist))))
 
@@ -104,9 +104,9 @@ If omit BUF, return avairable checkers for `current-buffer'."
     (mapcar 'car
             (cl-remove-if-not
              (lambda (elm)
-               (pcase-let ((`(,_sym . ,obj) elm))
-                 (let ((modes (flylint-checker-modes obj))
-                       (fn    (flylint-checker-enabled obj)))
+               (pcase-let ((`(,_sym . ,checker) elm))
+                 (let ((modes (flylint-checker-modes checker))
+                       (fn    (flylint-checker-enabled checker)))
                    (and (apply #'derived-mode-p modes)
                         (and fn (funcall fn))))))
              flylint-checker-alist))))
