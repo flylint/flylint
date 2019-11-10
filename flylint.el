@@ -104,7 +104,7 @@
                (let ((modes (flylint-checker-modes checker))
                      (fn    (flylint-checker-enabled checker)))
                  (and (apply #'derived-mode-p modes)
-                      (and fn (funcall fn))))))
+                      (if fn (funcall fn) t)))))
            flylint-checker-alist)))
 
 (defun flylint--running-p ()
