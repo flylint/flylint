@@ -461,10 +461,10 @@ Start a sntax check if newline has inserted into the buffer."
   "Syntax checkers to disabled for the current buffer.")
 
 (defvar-local flylint-auto-disabled-checkers nil
-  "syntax checkers to disabled for the current buffer.")
+  "Syntax checkers to disabled for the current buffer.")
 
 (defvar-local flylint-temporaries nil
-  "Temporary files and directories created by Flylint.")
+  "Temporary files and directories created.")
 
 (defvar-local flylint-running nil
   "Non-nil if flylint running.")
