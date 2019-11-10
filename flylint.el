@@ -84,32 +84,28 @@
         (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
         (overlay-put ov 'help-echo (flylint-error-message err))))))
 
-(defun flylint--avairable-checkers (&optional buf)
-  "Get avairable checkers for BUF.
-If omit BUF, return avairable checkers for `current-buffer'."
-  (with-current-buffer (or buf (current-buffer))
-    (mapcar 'car
-            (cl-remove-if-not
-             (lambda (elm)
-               (pcase-let ((`(_sym . ,checker) elm))
-                 (let ((modes (flylint-checker-modes checker))
-                       (_fn   (flylint-checker-enabled checker)))
-                   (apply #'derived-mode-p modes))))
-             flylint-checker-alist))))
+(defun flylint--avairable-checkers ()
+  "Get avairable checkers for BUF."
+  (mapcar 'car
+          (cl-remove-if-not
+           (lambda (elm)
+             (pcase-let ((`(_sym . ,checker) elm))
+               (let ((modes (flylint-checker-modes checker))
+                     (_fn   (flylint-checker-enabled checker)))
+                 (apply #'derived-mode-p modes))))
+           flylint-checker-alist)))
 
-(defun flylint--avairable-checkers* (&optional buf)
-  "Get avairable checkers for BUF and considering :enabled.
-If omit BUF, return avairable checkers for `current-buffer'."
-  (with-current-buffer (or buf (current-buffer))
-    (mapcar 'car
-            (cl-remove-if-not
-             (lambda (elm)
-               (pcase-let ((`(,_sym . ,checker) elm))
-                 (let ((modes (flylint-checker-modes checker))
-                       (fn    (flylint-checker-enabled checker)))
-                   (and (apply #'derived-mode-p modes)
-                        (and fn (funcall fn))))))
-             flylint-checker-alist))))
+(defun flylint--avairable-checkers* ()
+  "Get avairable checkers for BUF and considering :enabled."
+  (mapcar 'car
+          (cl-remove-if-not
+           (lambda (elm)
+             (pcase-let ((`(,_sym . ,checker) elm))
+               (let ((modes (flylint-checker-modes checker))
+                     (fn    (flylint-checker-enabled checker)))
+                 (and (apply #'derived-mode-p modes)
+                      (and fn (funcall fn))))))
+           flylint-checker-alist)))
 
 (defun flylint--running-p ()
   "Return non-nil if flylint running."
