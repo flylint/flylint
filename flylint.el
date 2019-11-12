@@ -441,7 +441,7 @@ see `flylint-check-syntax-triger'."
 
 (defun flylint--handle-save ()
   "Handle a buffer save."
-  (flylint--run-checkers 'save))
+  (flylint-run-checkers 'save))
 
 (defun flylint--handle-change (beg end _len)
   "Handle a buffer change between BEG to END.
@@ -450,8 +450,12 @@ _LEN is ignored.
 Start a sntax check if newline has inserted into the buffer."
   (when flylint-mode
     (if (string-match-p "\n" (buffer-substring beg end))
-        (flylint--run-checkers 'new-line)
-      (flylint--run-checkers 'change))))
+        (flylint-run-checkers 'new-line)
+      (flylint-run-checkers 'change))))
+
+(defun flylint--handle-mode-enabled ()
+  "Handle flylint-mode enabled."
+  (flylint-run-checkers 'mode-enabled))
 
 
 ;;; Minor-mode support functions / variables
@@ -550,7 +554,10 @@ But Flylint-mode is not enabled for
                                               flylint-enabled-checkers))
   (setq-local flylint-disabled-checkers flylint-auto-disabled-checkers)
   (pcase-dolist (`(,hook . ,fn) flylint-hooks-alist)
-    (add-hook hook fn nil 'local)))
+    (add-hook hook fn nil 'local))
+
+  ;; may run checkers with 'mode-enable argument
+  (flylint--handle-mode-enabled))
 
 (defun flylint--teardown ()
   "Teardown flylint system."
@@ -579,9 +586,7 @@ If called interactively, show the version in the echo area."
   :lighter (:eval (flylint--mode-lighter))
   :group 'flylint
   (if flylint-mode
-      (progn
-        (flylint--setup)
-        (flylint--run-checkers 'mode-enabled))
+      (flylint--setup)
     (flylint--teardown)))
 
 ;;;###autoload
