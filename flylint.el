@@ -420,15 +420,17 @@ are substituted within the body of cells!"
                                  (flylint-checker-command checker*)))))))
         (unless (eq res 'timeout))))))
 
-(defun flylint--run-checkers (triger)
+(defun flylint-run-checkers (triger)
   "Run checkers with TRIGER.
 see `flylint-check-syntax-triger'."
+  (interactive (list 'manual))
   (and flylint-mode (not (flylint--running-p))
     (let ((condition (lambda (elm triger)
                        (and (eq elm triger)
                             (memq elm flylint-check-syntax-triger)))))
       (cond
-       ((or (funcall condition 'save triger)
+       ((or (eq 'manual triger)
+            (funcall condition 'save triger)
             (funcall condition 'new-line triger)
             (funcall condition 'mode-enabled triger))
         (setq-local flylint-running t)
