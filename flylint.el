@@ -123,7 +123,6 @@ File to remove is listed in `flylint-temporaries' and set to nil."
 
 (defun flylint--save-buffer-to-temp (temp-file-fn)
   "Save buffer to temp file returned by TEMP-FILE-FN.
-
 Return the name of the temporary file."
   (let ((filename (funcall temp-file-fn (buffer-file-name))))
     ;; Do not flush short-lived temporary files onto disk
@@ -133,7 +132,6 @@ Return the name of the temporary file."
 
 (defun flylint--temp-file-system (filename)
   "Create a temporary file named after FILENAME.
-
 If FILENAME is non-nil, this function creates a temporary
 directory with `flylint--temp-unique-dir', and creates a file
 with the same name as FILENAME in this directory.
@@ -153,7 +151,6 @@ Return the path of the file."
 
 (defun flylint--temp-file-inplace (filename)
   "Create an in-place copy of FILENAME.
-
 Prefix the file with `flylint-temp-prefix' and add the path of
 the file to `flylint-temporaries'.
 
@@ -173,7 +170,6 @@ Return the path of the file."
 
 (defun flylint--temp-unique-dir ()
   "Create a unique temporary directory.
-
 Use `flylint-temp-prefix' as prefix, and add the directory to
 `flylint-temporaries'.
 
@@ -184,7 +180,6 @@ Return the path of the directory"
 
 (defun flylint--locate-config-file (filename checker)
   "Locate the configuration file FILENAME for CHECKER.
-
 Locate the configuration file using
 `flylint--locate-config-file-functions'.
 
@@ -198,7 +193,6 @@ configuration file was found."
 
 (defun flylint--prepend-with-option (option items &optional prepend-fn)
   "Prepend OPTION to each item in ITEMS, using PREPEND-FN.
-
 Prepend OPTION to each item in ITEMS.
 
 ITEMS is a list of strings to pass to the syntax checker.  OPTION
@@ -231,8 +225,7 @@ spliced into the resulting list."
     (write-region nil nil filename nil 0)))
 
 (defun flylint--interpret-sexp (sexp &optional checker)
-  "Interpret SEXP.
-
+  "Interpret SEXP for CHECKER.
 SEXP may be one of the following forms:
 
 STRING
