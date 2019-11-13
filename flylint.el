@@ -135,13 +135,13 @@ Return the name of the temporary file."
 
 (defun flylint--temp-file-system (filename)
   "Create a temporary file named after FILENAME.
-If FILENAME is non-nil, this function creates a temporary
-directory with `flylint--temp-unique-dir', and creates a file
-with the same name as FILENAME in this directory.
+If FILENAME is non-nil, this function creates a temporary directory
+with `flylint--temp-unique-dir', and creates a file with the same name
+as FILENAME in this directory.
 
 Otherwise this function creates a temporary file with
-`flylint-temp-prefix' and a random suffix.  The path of the file
-is added to `flylint-temporaries'."
+`flylint-temp-prefix' and a random suffix.
+Return file will added to `flylint-temporaries'."
   (let ((tempfile (convert-standard-filename
                    (if filename
                        (expand-file-name (file-name-nondirectory filename)
@@ -151,11 +151,9 @@ is added to `flylint-temporaries'."
     tempfile))
 
 (defun flylint--temp-file-inplace (filename)
-  "Create an in-place copy of FILENAME.
-Prefix the file with `flylint-temp-prefix' and add the path of
-the file to `flylint-temporaries'.
-
-If FILENAME is nil, fall back to `flylint--temp-file-system'."
+  "Create an in-place copy of FILENAME prefixed with `flylint-temp-prefix'.
+If FILENAME is nil, fall back to `flylint--temp-file-system'.
+Return file will added to `flylint-temporaries'."
   (if filename
       (let* ((tempname (format "%s_%s"
                                flylint-temp-prefix
@@ -168,9 +166,8 @@ If FILENAME is nil, fall back to `flylint--temp-file-system'."
     (flylint--temp-file-system filename)))
 
 (defun flylint--temp-unique-dir ()
-  "Create a unique temporary directory.
-Use `flylint-temp-prefix' as prefix, and add the directory to
-`flylint-temporaries'."
+  "Create a unique temp directory prefixed with `flylint-temp-prefix'.
+Return directory will added to `flylint-temporaries'."
   (let* ((tempdir (make-temp-file flylint-temp-prefix 'directory)))
     (push tempdir flylint-temporaries)
     tempdir))
