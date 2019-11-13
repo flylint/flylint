@@ -448,7 +448,7 @@ Otherwise, return 0."
                  (promise:async-start
                   `(lambda ()
                      (let ((str ,(format "%s\n%s" (nth 1 cmd-res) (nth 2 cmd-res)))
-                           (reg ,(flylint-checker-compiled-error-pattern checker*))
+                           (reg ,(flylint-checker-composed-error-pattern checker*))
                            (last-match 0)
                            res)
                        (while (string-match reg str last-match)

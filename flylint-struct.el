@@ -124,8 +124,8 @@ Slots:
 `error-patterns'
      Error patterns linter output, as list.
 
-`compiled-error-pattern'
-     Compiled error pattern regexp from `error-patterns', as string.
+`composed-error-pattern'
+     Composed error pattern regexp from `error-patterns', as string.
 
 `enabled'
      Whether parser enabled, as bool.
@@ -133,7 +133,7 @@ Slots:
 `modes'
      What major/minor-mode(s) parser enabled, as list."
   name docstring command standard-input working-directory
-  error-patterns compiled-error-pattern enabled modes)
+  error-patterns composed-error-pattern enabled modes)
 
 (provide 'flylint-struct)
 

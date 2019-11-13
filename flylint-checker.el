@@ -153,7 +153,8 @@ ERROR-PATTERNS ENABLED MODES)"
   (setq args (append (list :name name :docstring docstring) args))
   (let* ((keywords (list :name :docstring :command
                          :standard-input :working-directory
-                         :error-patterns :enabled :modes))
+                         :error-patterns :composed-error-pattern
+                         :enabled :modes))
          (fn (lambda (elm)
                (if (and (listp elm)
                         (member `',(car elm)
@@ -175,7 +176,7 @@ ERROR-PATTERNS ENABLED MODES)"
                                  ',val*))
                  else do (setq val* `',val*)
                  append `(,key* ,val*))))
-    (setq args* (append args* `(:compiled-error-pattern
+    (setq args* (append args* `(:composed-error-pattern
                                 (rx-to-string
                                  `(| ,@(mapcar (lambda (elm) (list 'regexp (cdr elm)))
                                                ,(plist-get args* :error-patterns)))
