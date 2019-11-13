@@ -442,7 +442,22 @@ Otherwise, return 0."
                (if (eq 'timeout (cadr err))
                    'timeout
                  (cadr err)))))
-           (exit-code (flylint--get-exit-code cmd-res))))))
+           (exit-code (flylint--get-exit-code cmd-res))
+           (tokenized
+            (condition-case err
+                (await
+                 (promise:async-start
+                  `(lambda ()
+                     (let ((str ,(format "%s\n%s" (nth 1 cmd-res) (nth 2 cmd-res)))
+                           (reg ,(flylint-checker-compiled-error-pattern checker*))
+                           (last-match 0)
+                           res)
+                       (while (string-match reg str last-match)
+                         (push (match-string 0 str) res)
+                         (setq last-match (match-end 0)))
+                       (nreverse res)))))
+              (error (flylint--warn "Failed tokenize from %s"
+                                    (pp-to-string cmd-res)))))))))
 
 (defun flylint-run-checkers (triger)
   "Run checkers with TRIGER.
