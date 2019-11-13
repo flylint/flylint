@@ -409,13 +409,25 @@ are substituted within the body of cells!"
                 (_ (error "Unsupported argument %S" elm))))))
     (mapcan fn sexp)))
 
+(defun flylint--get-exit-code (res)
+  "Get exit code from RES as integer.
+Interpret event string when length of RES is 3.
+Otherwise, return 0."
+  (if (not (= 3 (length res)))
+      0
+    (let ((reg "exited abnormally with code \\([[:digit:]]*\\)\n")
+          (str (car res)))
+      (if (string-match reg str)
+          (string-to-number (match-string 1 str))
+        (error "Unknown command exit event: %s" str)))))
+
 (async-defun flylint--run (checker)
   "Run CHECKER async."
   (when-let (checker* (flylint--get-checker checker))
     (let* ((cmd      (car (flylint-checker-command checker*)))
            (cmd-args (cdr (flylint-checker-command checker*)))
            (stdin-p  (flylint-checker-standard-input checker*))
-           (res
+           (res-1
             (condition-case err
                 (await
                  (promise-race
@@ -429,7 +441,8 @@ are substituted within the body of cells!"
               (error
                (if (eq 'timeout (cadr err))
                    'timeout
-                 (cadr err)))))))))
+                 (cadr err)))))
+           (exit-code (flylint--get-exit-code res-1))))))
 
 (defun flylint-run-checkers (triger)
   "Run checkers with TRIGER.
