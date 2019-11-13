@@ -438,10 +438,9 @@ Otherwise, return 0."
                               `(,cmd ,(current-buffer) ,@cmd-args))
                      (apply #'promise:make-process
                             `(,cmd ,@cmd-args))))))
-              (error
-               (if (eq 'timeout (cadr err))
-                   'timeout
-                 (cadr err)))))
+              (error (if (eq 'timeout (cadr err))
+                         'timeout
+                       (cadr err)))))
            (exit-code (flylint--get-exit-code cmd-res))
            (tokenized
             (condition-case err
