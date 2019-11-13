@@ -37,6 +37,13 @@
   "Get all values of ALIST."
   (mapcar 'cdr alist))
 
+
+;;; error
+(defun flylint--warn (message &rest args)
+  "Warn with `flylint' type.
+Display a warning message made from (format-message MESSAGE ARGS...)."
+  (apply #'lwarn `(flylint :warning ,message ,@args)))
+
 (provide 'flylint-polyfill)
 
 ;; Local Variables:
