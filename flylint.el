@@ -427,6 +427,8 @@ Otherwise, return 0."
     (let* ((cmd      (car (flylint-checker-command checker*)))
            (cmd-args (cdr (flylint-checker-command checker*)))
            (stdin-p  (flylint-checker-standard-input checker*))
+           (compreg  (flylint-checker-composed-error-pattern checker*))
+           (regs     (flylint-checker-error-patterns checker*))
            (cmd-res
             (condition-case err
                 (await
@@ -448,15 +450,16 @@ Otherwise, return 0."
                  (promise:async-start
                   `(lambda ()
                      (let ((str ,(format "%s\n%s" (nth 1 cmd-res) (nth 2 cmd-res)))
-                           (reg ,(flylint-checker-composed-error-pattern checker*))
+                           (compreg ,compreg)
+                           (regs ',regs)
                            (last-match 0)
                            res)
-                       (while (string-match reg str last-match)
+                       (while (string-match compreg str last-match)
                          (push (match-string 0 str) res)
                          (setq last-match (match-end 0)))
                        (nreverse res)))))
-              (error (flylint--warn "Failed tokenize from %s"
-                                    (pp-to-string cmd-res)))))))))
+              (error (flylint--warn "Failed tokenize err: %s, res: %s"
+                                    err (pp-to-string cmd-res)))))))))
 
 (defun flylint-run-checkers (triger)
   "Run checkers with TRIGER.
