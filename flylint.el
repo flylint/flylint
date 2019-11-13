@@ -459,6 +459,30 @@ Otherwise, return 0."
                          (setq last-match (match-end 0)))
                        (nreverse res)))))
               (error (flylint--warn "Failed tokenize err: %s, res: %s"
+                                    err (pp-to-string cmd-res)))))
+           (errors
+            (condition-case err
+                (await
+                 (promise:async-start
+                  `(lambda ()
+                     (let ((regs ',regs))
+                       (mapcar (lambda (str)
+                                 (car
+                                  (delq nil
+                                        (mapcar
+                                         (lambda (elm)
+                                           (let ((type (car elm))
+                                                 (reg  (cdr elm)))
+                                             (when (string-match reg str)
+                                               `(,type
+                                                 ,(match-string 1 str)
+                                                 ,(match-string 2 str)
+                                                 ,(match-string 3 str)
+                                                 ,(match-string 4 str)
+                                                 ,(match-string 5 str)))))
+                                         regs))))
+                               ',tokenized)))))
+              (error (flylint--warn "Failed parse err: %s, res: %s"
                                     err (pp-to-string cmd-res)))))))))
 
 (defun flylint-run-checkers (triger)
