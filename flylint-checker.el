@@ -45,6 +45,10 @@
 (defvar flylint-checker-alist nil
   "All parsers for `flylint-checker'.")
 
+(defun flylint--get-checker (checker)
+  "Return `flylint-chekcer' structure corresponding to CHECKER."
+  (alist-get checker flylint-checker-alist))
+
 (define-derived-mode flylint-list-mode tabulated-list-mode "flylint checkers"
   "Major mode for listing `flylint-list-all-checkers'."
   (setq-local tabulated-list-sort-key '("Checker" . nil))

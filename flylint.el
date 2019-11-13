@@ -411,7 +411,7 @@ are substituted within the body of cells!"
 
 (async-defun flylint--run (checker)
   "Run CHECKER async."
-  (when-let (checker* (alist-get checker flylint-checker-alist))
+  (when-let (checker* (flylint--get-checker checker))
     (let* ((cmd      (car (flylint-checker-command checker*)))
            (cmd-args (cdr (flylint-checker-command checker*)))
            (stdin-p  (flylint-checker-standard-input checker*))
