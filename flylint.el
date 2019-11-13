@@ -429,9 +429,7 @@ are substituted within the body of cells!"
               (error
                (if (eq 'timeout (cadr err))
                    'timeout
-                 (let ((stdout (nth 1 err))
-                       (stderr (nth 2 err)))
-                   `(,stdout ,stderr))))))))))
+                 (cadr err)))))))))
 
 (defun flylint-run-checkers (triger)
   "Run checkers with TRIGER.
