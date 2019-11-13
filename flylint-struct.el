@@ -82,6 +82,7 @@ Slots:
                              (beg end replace &key (buffer (current-buffer))))
                (:copier nil))
   "Structure representing a recommended correction.
+
 Slots:
 `beg'
      The beggining of replacement as point object.
@@ -101,8 +102,10 @@ Slots:
 (cl-defstruct (flylint-checker (:constructor flylint-checker--new)
                                (:copier nil))
   "Structure representing parser for each linters.
-Slots:
 
+Must create this struct with `flylint-checker-define'.
+
+Slots:
 `name'
      Parser name, as symbol.
 
@@ -121,13 +124,16 @@ Slots:
 `error-patterns'
      Error patterns linter output, as list.
 
+`compiled-error-pattern'
+     Compiled error pattern regexp from `error-patterns', as string.
+
 `enabled'
      Whether parser enabled, as bool.
 
 `modes'
      What major/minor-mode(s) parser enabled, as list."
   name docstring command standard-input working-directory
-  error-patterns enabled modes)
+  error-patterns compiled-error-pattern enabled modes)
 
 (provide 'flylint-struct)
 
