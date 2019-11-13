@@ -125,7 +125,7 @@ Return the name of the temporary file."
   "Create a temporary file named after FILENAME.
 
 If FILENAME is non-nil, this function creates a temporary
-directory with `flylint--temp-dir-system', and creates a file
+directory with `flylint--temp-unique-dir', and creates a file
 with the same name as FILENAME in this directory.
 
 Otherwise this function creates a temporary file with
@@ -136,7 +136,7 @@ Return the path of the file."
   (let ((tempfile (convert-standard-filename
                    (if filename
                        (expand-file-name (file-name-nondirectory filename)
-                                         (flylint--temp-dir-system))
+                                         (flylint--temp-unique-dir))
                      (make-temp-file flylint-temp-prefix)))))
     (push tempfile flylint-temporaries)
     tempfile))
@@ -161,7 +161,7 @@ Return the path of the file."
         tempfile)
     (flylint--temp-file-system filename)))
 
-(defun flylint--temp-dir-system ()
+(defun flylint--temp-unique-dir ()
   "Create a unique temporary directory.
 
 Use `flylint-temp-prefix' as prefix, and add the directory to
@@ -340,9 +340,9 @@ are substituted within the body of cells!"
                 (`source-inplace
                  (list (flylint--save-buffer-to-temp #'flylint--temp-file-inplace)))
                 (`source-original (list (or (buffer-file-name) "")))
-                (`temporary-directory (list (flylint--temp-dir-system)))
+                (`temporary-directory (list (flylint--temp-unique-dir)))
                 (`temporary-file-name
-                 (let ((directory (flylint--temp-dir-system)))
+                 (let ((directory (flylint--temp-unique-dir)))
                    (list (make-temp-name (expand-file-name "flylint" directory)))))
                 (`null-device (list null-device))
                 (`(config-file ,option-name ,file-name-var)
