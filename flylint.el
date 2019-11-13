@@ -111,6 +111,9 @@
   "Return non-nil if flylint running."
   flylint-running)
 
+
+;;; Manage temp files/directories
+
 (defun flylint--temp-remove-all ()
   "Remove all temp files and directories created by flylint.
 File to remove is listed in `flylint-temporaries' and set to nil."
@@ -411,6 +414,9 @@ are substituted within the body of cells!"
                     (t (error "Invalid result from evaluation of %S: %S" form result)))))
                 (_ (error "Unsupported argument %S" elm))))))
     (mapcan fn sexp)))
+
+
+;;; Management checker
 
 (defun flylint--get-exit-code (res)
   "Get exit code from RES as integer.
