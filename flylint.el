@@ -427,7 +427,7 @@ Otherwise, return 0."
     (let* ((cmd      (car (flylint-checker-command checker*)))
            (cmd-args (cdr (flylint-checker-command checker*)))
            (stdin-p  (flylint-checker-standard-input checker*))
-           (res-1
+           (cmd-res
             (condition-case err
                 (await
                  (promise-race
@@ -442,7 +442,7 @@ Otherwise, return 0."
                (if (eq 'timeout (cadr err))
                    'timeout
                  (cadr err)))))
-           (exit-code (flylint--get-exit-code res-1))))))
+           (exit-code (flylint--get-exit-code cmd-res))))))
 
 (defun flylint-run-checkers (triger)
   "Run checkers with TRIGER.
