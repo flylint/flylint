@@ -175,6 +175,11 @@ ERROR-PATTERNS ENABLED MODES)"
                                  ',val*))
                  else do (setq val* `',val*)
                  append `(,key* ,val*))))
+    (setq args* (append args* `(:compiled-error-pattern
+                                (rx-to-string
+                                 `(| ,@(mapcar (lambda (elm) (list 'regexp (cdr elm)))
+                                               ,(plist-get args* :error-patterns)))
+                                 'no-group))))
     `(setf (alist-get ',name flylint-checker-alist)
            (flylint-checker--new ,@args*))))
 
