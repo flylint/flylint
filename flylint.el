@@ -111,6 +111,16 @@
   "Return non-nil if flylint running."
   flylint-running)
 
+(defun flylint--temp-remove-all ()
+  "Remove all temp files and directories created by flylint.
+File to remove is listed in `flylint-temporaries' and set to nil."
+  (dolist (file-or-dir flylint-temporaries)
+    (ignore-errors
+      (if (file-directory-p file-or-dir)
+          (delete-directory file-or-dir 'recursive)
+        (delete-file file-or-dir))))
+  (setq flylint-temporaries nil))
+
 (defun flylint--save-buffer-to-temp (temp-file-fn)
   "Save buffer to temp file returned by TEMP-FILE-FN.
 
@@ -627,7 +637,8 @@ But Flylint-mode is not enabled for
 (defun flylint--teardown ()
   "Teardown flylint system."
   (pcase-dolist (`(,hook . ,fn) flylint-hooks-alist)
-    (remove-hook hook fn 'local)))
+    (remove-hook hook fn 'local))
+  (flylint--temp-remove-all))
 
 
 ;;; Main
