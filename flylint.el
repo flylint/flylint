@@ -411,14 +411,25 @@ are substituted within the body of cells!"
 
 (async-defun flylint--run (checker)
   "Run CHECKER async."
-  (let ((checker* (alist-get checker flylint-checker-alist)))
-    (when checker*
-      (let ((res (await (promise-race
-                         (vector
-                          (promise:time-out 10 'timeout)
-                          (apply #'promise:make-process
-                                 (flylint-checker-command checker*)))))))
-        (unless (eq res 'timeout))))))
+  (when-let (checker* (alist-get checker flylint-checker-alist))
+    (let* ((cmd      (car (flylint-checker-command checker*)))
+           (cmd-args (cdr (flylint-checker-command checker*)))
+           (stdin-p  (flylint-checker-standard-input checker*))
+           (res
+            (condition-case err
+                (await
+                 (promise-race
+                  (vector
+                   (promise:time-out 10 "timeout")
+                   (if stdin-p
+                       (apply #'promise:make-process-with-buffer-string
+                              `(,cmd ,(current-buffer) ,@cmd-args))
+                     (apply #'promise:make-process
+                            `(,cmd ,@cmd-args))))))
+              (error
+               (let ((stdout (nth 1 err))
+                     (stderr (nth 2 err)))
+                 `(,stdout ,stderr)))))))))
 
 (defun flylint-run-checkers (triger)
   "Run checkers with TRIGER.
