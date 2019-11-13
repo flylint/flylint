@@ -121,7 +121,7 @@ File to remove is listed in `flylint-temporaries' and set to nil."
         (delete-file file-or-dir))))
   (setq flylint-temporaries nil))
 
-(defun flylint--save-buffer-to-temp (temp-file-fn)
+(defun flylint--temp-save-buffer (temp-file-fn)
   "Save buffer to temp file returned by TEMP-FILE-FN.
 Return the name of the temporary file."
   (let ((filename (funcall temp-file-fn (buffer-file-name))))
@@ -339,9 +339,9 @@ are substituted within the body of cells!"
               (pcase elm
                 ((pred stringp) (list elm))
                 (`source
-                 (list (flylint--save-buffer-to-temp #'flylint--temp-file-system)))
+                 (list (flylint--temp-save-buffer #'flylint--temp-file-system)))
                 (`source-inplace
-                 (list (flylint--save-buffer-to-temp #'flylint--temp-file-inplace)))
+                 (list (flylint--temp-save-buffer #'flylint--temp-file-inplace)))
                 (`source-original (list (or (buffer-file-name) "")))
                 (`temporary-directory (list (flylint--temp-unique-dir)))
                 (`temporary-file-name
