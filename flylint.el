@@ -409,6 +409,20 @@ are substituted within the body of cells!"
 
 ;;; Management checker
 
+(defun flylint--exec-command (checker*)
+  "Return promise to exec command for CHECKER*."
+  (let ((cmd      (car (flylint-checker-command checker*)))
+        (cmd-args (cdr (flylint-checker-command checker*)))
+        (stdin-p  (flylint-checker-standard-input checker*)))
+    (promise-race
+     (vector
+      (promise:time-out 10 'timeout)
+      (if stdin-p
+          (apply #'promise:make-process-with-buffer-string
+                 `(,cmd ,(current-buffer) ,@cmd-args))
+        (apply #'promise:make-process
+               `(,cmd ,@cmd-args)))))))
+
 (defun flylint--get-exit-code (res)
   "Get exit code from RES as integer.
 Interpret event string when length of RES is 3.
@@ -421,87 +435,83 @@ Otherwise, return 0."
           (string-to-number (match-string 1 str))
         (error "Unknown command exit event: %s" str)))))
 
+(defun flylint--tokenize-output (checker* cmd-res)
+  "Return promise to tokenize shell output CMD-RES for CHECKER*."
+  (let ((compreg  (flylint-checker-composed-error-pattern checker*))
+        (regs     (flylint-checker-error-patterns checker*)))
+    (promise:async-start
+     `(lambda ()
+        (let ((str ,(format "%s\n%s" (nth 1 cmd-res) (nth 2 cmd-res)))
+              (compreg ,compreg)
+              (regs ',regs)
+              (last-match 0)
+              res)
+          (while (string-match compreg str last-match)
+            (push (match-string 0 str) res)
+            (setq last-match (match-end 0)))
+          (nreverse res))))))
+
+(defun flylint--parse-output (checker* tokens)
+  "Return promise to parse TOKENS for CHECKER*."
+  (let ((regs     (flylint-checker-error-patterns checker*)))
+    (promise:async-start
+     `(lambda ()
+        (let ((regs ',regs))
+          (mapcar (lambda (str)
+                    (car
+                     (delq nil
+                           (mapcar
+                            (lambda (elm)
+                              (let ((type (car elm))
+                                    (reg  (cdr elm)))
+                                (when (string-match reg str)
+                                  `(,type
+                                    ,(match-string 1 str)
+                                    ,(match-string 2 str)
+                                    ,(match-string 3 str)
+                                    ,(match-string 4 str)
+                                    ,(match-string 5 str)))))
+                            regs))))
+                  ',tokens))))))
+
 (async-defun flylint--run (checker)
   "Run CHECKER async."
   (when-let (checker* (flylint--get-checker checker))
-    (let* ((cmd      (car (flylint-checker-command checker*)))
-           (cmd-args (cdr (flylint-checker-command checker*)))
-           (stdin-p  (flylint-checker-standard-input checker*))
-           (compreg  (flylint-checker-composed-error-pattern checker*))
-           (regs     (flylint-checker-error-patterns checker*))
-           (cmd-res
-            (condition-case err
-                (await
-                 (promise-race
-                  (vector
-                   (promise:time-out 10 'timeout)
-                   (if stdin-p
-                       (apply #'promise:make-process-with-buffer-string
-                              `(,cmd ,(current-buffer) ,@cmd-args))
-                     (apply #'promise:make-process
-                            `(,cmd ,@cmd-args))))))
-              (error (if (eq 'timeout (cadr err))
-                         'timeout
-                       (cadr err)))))
+    (let* ((cmd-res   (flylint--await-promise
+                          (flylint--exec-command checker*)
+                        (lambda (err)
+                          (if (eq 'timeout (cadr err))
+                              'timeout
+                            (cadr err)))))
            (exit-code (flylint--get-exit-code cmd-res))
-           (tokenized
-            (condition-case err
-                (await
-                 (promise:async-start
-                  `(lambda ()
-                     (let ((str ,(format "%s\n%s" (nth 1 cmd-res) (nth 2 cmd-res)))
-                           (compreg ,compreg)
-                           (regs ',regs)
-                           (last-match 0)
-                           res)
-                       (while (string-match compreg str last-match)
-                         (push (match-string 0 str) res)
-                         (setq last-match (match-end 0)))
-                       (nreverse res)))))
-              (error (flylint--warn "Failed tokenize err: %s, res: %s"
-                                    err (pp-to-string cmd-res)))))
-           (errors
-            (condition-case err
-                (await
-                 (promise:async-start
-                  `(lambda ()
-                     (let ((regs ',regs))
-                       (mapcar (lambda (str)
-                                 (car
-                                  (delq nil
-                                        (mapcar
-                                         (lambda (elm)
-                                           (let ((type (car elm))
-                                                 (reg  (cdr elm)))
-                                             (when (string-match reg str)
-                                               `(,type
-                                                 ,(match-string 1 str)
-                                                 ,(match-string 2 str)
-                                                 ,(match-string 3 str)
-                                                 ,(match-string 4 str)
-                                                 ,(match-string 5 str)))))
-                                         regs))))
-                               ',tokenized)))))
-              (error (flylint--warn "Failed parse err: %s, res: %s"
-                                    err (pp-to-string cmd-res)))))))))
+           (tokens    (flylint--await-promise
+                          (flylint--tokenize-output checker* cmd-res)
+                        (lambda (err)
+                          (flylint--warn "Failed tokenize err: %s, res: %s"
+                                         err (pp-to-string cmd-res)))))
+           (errors    (flylint--await-promise
+                          (flylint--parse-output checker* tokens)
+                        (lambda (err)
+                          (flylint--warn "Failed parse err: %s, res: %s"
+                                         err (pp-to-string tokens)))))))))
 
 (defun flylint-run-checkers (triger)
   "Run checkers with TRIGER.
 see `flylint-check-syntax-triger'."
   (interactive (list 'manual))
   (and flylint-mode (not (flylint--running-p))
-    (let ((condition (lambda (elm triger)
-                       (and (eq elm triger)
-                            (memq elm flylint-check-syntax-triger)))))
-      (cond
-       ((or (eq 'manual triger)
-            (funcall condition 'save triger)
-            (funcall condition 'new-line triger)
-            (funcall condition 'mode-enabled triger))
-        (setq-local flylint-running t)
-        (dolist (elm flylint-enabled-checkers)
-          (flylint--run elm)))
-       ((funcall condition 'change triger)))))
+       (let ((condition (lambda (elm triger)
+                          (and (eq elm triger)
+                               (memq elm flylint-check-syntax-triger)))))
+         (cond
+          ((or (eq 'manual triger)
+               (funcall condition 'save triger)
+               (funcall condition 'new-line triger)
+               (funcall condition 'mode-enabled triger))
+           (setq-local flylint-running t)
+           (dolist (elm flylint-enabled-checkers)
+             (flylint--run elm)))
+          ((funcall condition 'change triger)))))
   (setq-local flylint-running nil))
 
 (defun flylint--handle-save ()

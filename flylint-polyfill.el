@@ -44,6 +44,23 @@
 Display a warning message made from (format-message MESSAGE ARGS...)."
   (apply #'lwarn `(flylint :warning ,message ,@args)))
 
+
+;;; async-await
+(defmacro flylint--await-promise (promise &optional errfn nmlfn)
+  "Await PROMISE then funcall NMLFN.  If error funcall ERRFN.
+NMLFN is funcalled with resolved value of PROMISE.
+ERRFN is funcalled with err variable."
+  (declare (indent 1))
+  `(condition-case err
+       (let ((res (await ,promise)))
+         ,(if nmlfn
+              `(funcall ,nmlfn res)
+            'res))
+     (error
+      ,(if errfn
+           `(funcall ,errfn err)
+         '(error err)))))
+
 (provide 'flylint-polyfill)
 
 ;; Local Variables:
