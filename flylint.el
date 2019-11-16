@@ -516,24 +516,22 @@ Promise will reject when fail child Emacs process."
 
 (async-defun flylint--run (checker)
   "Run CHECKER async."
-  (when-let (checker* (flylint--get-checker checker))
-    (let* ((cmd-res   (flylint--await-promise
-                          (flylint--exec-command checker)
-                        (lambda (err)
-                          (if (eq 'timeout (cadr err))
-                              'timeout
-                            (cadr err)))))
-           (exit-code (flylint--get-exit-code cmd-res))
-           (tokens    (flylint--await-promise
-                          (flylint--tokenize-output checker cmd-res)
-                        (lambda (err)
-                          (flylint--warn "Failed tokenize err: %s, res: %s"
-                                         err (pp-to-string cmd-res)))))
-           (errors    (flylint--await-promise
-                          (flylint--parse-output checker tokens)
-                        (lambda (err)
-                          (flylint--warn "Failed parse err: %s, res: %s"
-                                         err (pp-to-string tokens)))))))))
+  (condition-case err
+      (let ((res (await
+                  (promise-chain (flylint--promise-get-checker checker)
+                    (then (lambda (_res)
+                            (flylint--promise-exec-command checker)))
+                    (then (lambda (res)
+                            (flylint--promise-tokenize-output checker res)))
+                    (then (lambda (tokens)
+                            (flylint--promise-parse-output checker tokens)))))))
+        (mapc (lambda (elm)
+                (flylint--warn (prin1-to-string elm)))
+              res))
+    (error
+     (pcase err
+       (`(error (missing-checker ,_))
+        (flylint--warn "Missing checker: %s" checker))))))
 
 (defun flylint-run-checkers (triger)
   "Run checkers with TRIGER.
