@@ -409,6 +409,17 @@ are substituted within the body of cells!"
 
 ;;; Management checker
 
+(defun flylint--promise-get-checker (checker)
+  "Return promise to search CHECKER in `flylint-checker-alist'.
+
+Promise will resolve `flylint-checker' if exists.
+Promise will reject if CHECKER missing."
+  (promise-new
+   (lambda (resolve reject)
+     (if-let (checker* (alist-get checker flylint-checker-alist))
+         (funcall resolve t)
+       (funcall reject `(missing-checker ,checker))))))
+
 (defun flylint--exec-command (checker)
   "Return promise to exec command for CHECKER*.
 If CHECKER's starndard-input is non-nil, send `current-buffer' to process.
