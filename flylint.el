@@ -410,31 +410,35 @@ are substituted within the body of cells!"
 ;;; Management checker
 
 (defun flylint--exec-command (checker)
-  "Return promise to exec command for CHECKER*."
+  "Return promise to exec command for CHECKER*.
+If CHECKER's starndard-input is non-nil, send `current-buffer' to process.
+
+Promise will resolve list such as (RETURN-CODE OUTPUT)."
   (let ((checker* (flylint--get-checker checker)))
     (let ((cmd      (car (flylint-checker-command checker*)))
           (cmd-args (cdr (flylint-checker-command checker*)))
-          (stdin-p  (flylint-checker-standard-input checker*)))
-      (promise-race
-       (vector
-        (promise:time-out 10 'timeout)
-        (if stdin-p
-            (apply #'promise:make-process-with-buffer-string
-                   `(,cmd ,(current-buffer) ,@cmd-args))
-          (apply #'promise:make-process
-                 `(,cmd ,@cmd-args))))))))
-
-(defun flylint--get-exit-code (res)
-  "Get exit code from RES as integer.
-Interpret event string when length of RES is 3.
-Otherwise, return 0."
-  (if (not (= 3 (length res)))
-      0
-    (let ((reg "exited abnormally with code \\([[:digit:]]*\\)\n")
-          (str (car res)))
-      (if (string-match reg str)
-          (string-to-number (match-string 1 str))
-        (error "Unknown command exit event: %s" str)))))
+          (stdin-p  (flylint-checker-standard-input checker*))
+          (exitcode (lambda (str)
+                      (let ((reg "exited abnormally with code \\([[:digit:]]*\\)\n"))
+                        (if (string-match reg str)
+                            (string-to-number (match-string 1 str))
+                          (error "Unknown command exit event: %s" str))))))
+      (promise-chain
+          (promise-race
+           (vector
+            (promise:time-out 10 'timeout)
+            (if stdin-p
+                (apply #'promise:make-process-with-buffer-string
+                       `(,cmd ,(current-buffer) ,@cmd-args))
+              (apply #'promise:make-process
+                     `(,cmd ,@cmd-args)))))
+        (then (lambda (res)
+                (flylint--warn "done-inner: %s" (prin1-to-string res))
+                (promise-resolve `(0 ,(string-join res "\n"))))
+              (lambda (reason)
+                (flylint--warn "reject-inner: %s" (prin1-to-string reason))
+                (promise-resolve `(,(funcall exitcode (car reason))
+                                   ,(string-join (cdr reason) "\n")))))))))
 
 (defun flylint--tokenize-output (checker cmd-res)
   "Return promise to tokenize shell output CMD-RES for CHECKER."
