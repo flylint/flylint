@@ -517,14 +517,10 @@ Promise will reject when fail child Emacs process."
 (async-defun flylint--run (checker)
   "Run CHECKER async."
   (condition-case err
-      (let ((res (await
-                  (promise-chain (flylint--promise-get-checker checker)
-                    (then (lambda (_res)
-                            (flylint--promise-exec-command checker)))
-                    (then (lambda (res)
-                            (flylint--promise-tokenize-output checker res)))
-                    (then (lambda (tokens)
-                            (flylint--promise-parse-output checker tokens)))))))
+      (let* ((res (await (flylint--promise-get-checker checker)))
+             (res (await (flylint--promise-exec-command checker)))
+             (res (await (flylint--promise-tokenize-output checker res)))
+             (res (await (flylint--promise-parse-output checker res))))
         (mapc (lambda (elm)
                 (flylint--warn (prin1-to-string elm)))
               res))
