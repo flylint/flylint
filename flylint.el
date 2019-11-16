@@ -419,10 +419,11 @@ Promise will resolve list such as (RETURN-CODE OUTPUT)."
           (cmd-args (cdr (flylint-checker-command checker*)))
           (stdin-p  (flylint-checker-standard-input checker*))
           (exitcode (lambda (str)
-                      (let ((reg "exited abnormally with code \\([[:digit:]]*\\)\n"))
-                        (if (string-match reg str)
-                            (string-to-number (match-string 1 str))
-                          (error "Unknown command exit event: %s" str))))))
+                      (when (stringp str)
+                        (let ((reg "exited abnormally with code \\([[:digit:]]*\\)\n"))
+                          (if (string-match reg str)
+                              (string-to-number (match-string 1 str))
+                            nil))))))
       (promise-chain
           (promise-race
            (vector
@@ -433,12 +434,12 @@ Promise will resolve list such as (RETURN-CODE OUTPUT)."
               (apply #'promise:make-process
                      `(,cmd ,@cmd-args)))))
         (then (lambda (res)
-                (flylint--warn "done-inner: %s" (prin1-to-string res))
                 (promise-resolve `(0 ,(string-join res "\n"))))
               (lambda (reason)
-                (flylint--warn "reject-inner: %s" (prin1-to-string reason))
-                (promise-resolve `(,(funcall exitcode (car reason))
-                                   ,(string-join (cdr reason) "\n")))))))))
+                (let ((code (funcall exitcode (car-safe reason))))
+                  (if code
+                      (promise-resolve `(,code ,(string-join (cdr reason) "\n")))
+                    (promise-reject `(failed ,reason))))))))))
 
 (defun flylint--tokenize-output (checker cmd-res)
   "Return promise to tokenize shell output CMD-RES for CHECKER."
