@@ -514,16 +514,25 @@ Promise will reject when fail child Emacs process."
        (lambda (reason)
          (promise-reject `(fail-parse-unknown ,reason ,tokens)))))))
 
+(defun flylint--promise-add-overlay (_checker errors)
+  "Return promise to display ERRORS for CHECKER.
+ERRORS format is return value `flylint--promise-parse-output'.
+
+Promise will resolve with t if noerror.
+Promise will reject when fail display ERRORS."
+  (pcase-dolist (`(,level ,filename ,line ,column ,message ,id) errors)
+    (flylint--add-overlay
+     (flylint-error-new line column level message
+                        :filename filename :id id))))
+
 (async-defun flylint--run (checker)
   "Run CHECKER async."
   (condition-case err
       (let* ((res (await (flylint--promise-get-checker checker)))
              (res (await (flylint--promise-exec-command checker)))
              (res (await (flylint--promise-tokenize-output checker res)))
-             (res (await (flylint--promise-parse-output checker res))))
-        (mapc (lambda (elm)
-                (flylint--warn (prin1-to-string elm)))
-              res))
+             (res (await (flylint--promise-parse-output checker res)))
+             (res (await (flylint--promise-add-overlay checker res)))))
     (error
      (pcase err
        (`(error (missing-checker ,_))
