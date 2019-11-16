@@ -413,7 +413,9 @@ are substituted within the body of cells!"
   "Return promise to exec command for CHECKER*.
 If CHECKER's starndard-input is non-nil, send `current-buffer' to process.
 
-Promise will resolve list such as (RETURN-CODE OUTPUT)."
+Promise will resolve list such as (RETURN-CODE OUTPUT).
+Promise will reject when command exit with unknown event (cannot parse
+exit code.)"
   (let ((checker* (flylint--get-checker checker)))
     (let ((cmd      (car (flylint-checker-command checker*)))
           (cmd-args (cdr (flylint-checker-command checker*)))
@@ -442,7 +444,10 @@ Promise will resolve list such as (RETURN-CODE OUTPUT)."
              (promise-reject `(fail-exec ,reason)))))))))
 
 (defun flylint--tokenize-output (checker res)
-  "Return promise to tokenize shell output RES for CHECKER."
+  "Return promise to tokenize shell output RES for CHECKER.
+
+Promise will resolve list of tokens as string.
+Promise will reject when no-token but command doesn't exit code 0."
   (let ((checker* (flylint--get-checker checker)))
     (let ((compreg (flylint-checker-composed-error-pattern checker*))
           (regs    (flylint-checker-error-patterns checker*)))
