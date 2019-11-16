@@ -468,32 +468,37 @@ Promise will reject when no-token but command doesn't exit code 0."
              (promise-resolve res)
            (unless (zerop (car cmd-res))
              (promise-reject `(fail-tokenize ,cmd-res)))))
-       (lambda (res)
-         (promise-reject `(fail-tokenize-unknown ,cmd-res)))))))
+       (lambda (reason)
+         (promise-reject `(fail-tokenize-unknown ,reason ,cmd-res)))))))
 
 (defun flylint--parse-output (checker tokens)
   "Return promise to parse TOKENS for CHECKER."
   (let ((checker* (flylint--get-checker checker)))
     (let ((regs (flylint-checker-error-patterns checker*)))
-      (promise:async-start
-       `(lambda ()
-          (let ((regs ',regs))
-            (mapcar (lambda (str)
-                      (car
-                       (delq nil
-                             (mapcar
-                              (lambda (elm)
-                                (let ((type (car elm))
-                                      (reg  (cdr elm)))
-                                  (when (string-match reg str)
-                                    `(,type
-                                      ,(match-string 1 str)
-                                      ,(match-string 2 str)
-                                      ,(match-string 3 str)
-                                      ,(match-string 4 str)
-                                      ,(match-string 5 str)))))
-                              regs))))
-                    ',tokens)))))))
+      (promise-then
+       (promise:async-start
+        `(lambda ()
+           (let ((regs ',regs))
+             (mapcar (lambda (str)
+                       (car
+                        (delq nil
+                              (mapcar
+                               (lambda (elm)
+                                 (let ((type (car elm))
+                                       (reg  (cdr elm)))
+                                   (when (string-match reg str)
+                                     `(,type
+                                       ,(match-string 1 str)
+                                       ,(match-string 2 str)
+                                       ,(match-string 3 str)
+                                       ,(match-string 4 str)
+                                       ,(match-string 5 str)))))
+                               regs))))
+                     ',tokens))))
+       (lambda (res)
+         (promise-resolve res))
+       (lambda (reason)
+         (promise-reject `(fail-parse-unknown ,reason ,tokens)))))))
 
 (async-defun flylint--run (checker)
   "Run CHECKER async."
