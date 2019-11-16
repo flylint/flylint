@@ -446,17 +446,23 @@ Promise will resolve list such as (RETURN-CODE OUTPUT)."
   (let ((checker* (flylint--get-checker checker)))
     (let ((compreg (flylint-checker-composed-error-pattern checker*))
           (regs    (flylint-checker-error-patterns checker*)))
-      (promise:async-start
-       `(lambda ()
-          (let ((str ,(format "%s\n%s" (nth 1 res) (nth 2 res)))
-                (compreg ,compreg)
-                (regs ',regs)
-                (last-match 0)
-                res)
-            (while (string-match compreg str last-match)
-              (push (match-string 0 str) res)
-              (setq last-match (match-end 0)))
-            (nreverse res)))))))
+      (promise-then
+       (promise:async-start
+        `(lambda ()
+           (let ((str ,(format "%s\n%s" (nth 1 res) (nth 2 res)))
+                 (compreg ,compreg)
+                 (regs ',regs)
+                 (last-match 0)
+                 res)
+             (while (string-match compreg str last-match)
+               (push (match-string 0 str) res)
+               (setq last-match (match-end 0)))
+             (nreverse res))))
+       (lambda (res*)
+         (if res*
+             (promise-resolve res*)
+           (unless (zerop (car res))
+             (promise-reject `(fail-tokenize ,res)))))))))
 
 (defun flylint--parse-output (checker tokens)
   "Return promise to parse TOKENS for CHECKER."
