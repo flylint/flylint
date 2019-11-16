@@ -420,7 +420,7 @@ Promise will reject if CHECKER missing."
          (funcall resolve t)
        (funcall reject `(missing-checker ,checker))))))
 
-(defun flylint--exec-command (checker)
+(defun flylint--promise-exec-command (checker)
   "Return promise to exec command for CHECKER*.
 If CHECKER's starndard-input is non-nil, send `current-buffer' to process.
 
@@ -454,7 +454,7 @@ exit code.)"
                (promise-resolve `(,code ,(string-join (cdr reason) "\n")))
              (promise-reject `(fail-exec ,reason)))))))))
 
-(defun flylint--tokenize-output (checker cmd-res)
+(defun flylint--promise-tokenize-output (checker cmd-res)
   "Return promise to tokenize shell output CMD-RES for CHECKER.
 
 Promise will resolve list of tokens as string.
@@ -482,7 +482,7 @@ Promise will reject when no-token but command doesn't exit code 0."
        (lambda (reason)
          (promise-reject `(fail-tokenize-unknown ,reason ,cmd-res)))))))
 
-(defun flylint--parse-output (checker tokens)
+(defun flylint--promise-parse-output (checker tokens)
   "Return promise to parse TOKENS for CHECKER.
 
 Promise will resolve list of (TYPE BUFFER LINE COLUMN MESSAGE)
