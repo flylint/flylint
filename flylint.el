@@ -443,8 +443,8 @@ exit code.)"
                (promise-resolve `(,code ,(string-join (cdr reason) "\n")))
              (promise-reject `(fail-exec ,reason)))))))))
 
-(defun flylint--tokenize-output (checker res)
-  "Return promise to tokenize shell output RES for CHECKER.
+(defun flylint--tokenize-output (checker cmd-res)
+  "Return promise to tokenize shell output CMD-RES for CHECKER.
 
 Promise will resolve list of tokens as string.
 Promise will reject when no-token but command doesn't exit code 0."
@@ -454,7 +454,7 @@ Promise will reject when no-token but command doesn't exit code 0."
       (promise-then
        (promise:async-start
         `(lambda ()
-           (let ((str ,(format "%s\n%s" (nth 1 res) (nth 2 res)))
+           (let ((str ,(format "%s\n%s" (nth 1 cmd-res) (nth 2 cmd-res)))
                  (compreg ,compreg)
                  (regs ',regs)
                  (last-match 0)
@@ -463,11 +463,11 @@ Promise will reject when no-token but command doesn't exit code 0."
                (push (match-string 0 str) res)
                (setq last-match (match-end 0)))
              (nreverse res))))
-       (lambda (res*)
-         (if res*
-             (promise-resolve res*)
-           (unless (zerop (car res))
-             (promise-reject `(fail-tokenize ,res)))))))))
+       (lambda (res)
+         (if res
+             (promise-resolve res)
+           (unless (zerop (car cmd-res))
+             (promise-reject `(fail-tokenize ,cmd-res)))))))))
 
 (defun flylint--parse-output (checker tokens)
   "Return promise to parse TOKENS for CHECKER."
