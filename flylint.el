@@ -439,7 +439,7 @@ Promise will resolve list such as (RETURN-CODE OUTPUT)."
          (let ((code (funcall exitcode (car-safe reason))))
            (if code
                (promise-resolve `(,code ,(string-join (cdr reason) "\n")))
-             (promise-reject `(failed ,reason)))))))))
+             (promise-reject `(fail-exec ,reason)))))))))
 
 (defun flylint--tokenize-output (checker res)
   "Return promise to tokenize shell output RES for CHECKER."
