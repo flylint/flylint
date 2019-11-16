@@ -441,14 +441,14 @@ Promise will resolve list such as (RETURN-CODE OUTPUT)."
                (promise-resolve `(,code ,(string-join (cdr reason) "\n")))
              (promise-reject `(failed ,reason)))))))))
 
-(defun flylint--tokenize-output (checker cmd-res)
-  "Return promise to tokenize shell output CMD-RES for CHECKER."
+(defun flylint--tokenize-output (checker res)
+  "Return promise to tokenize shell output RES for CHECKER."
   (let ((checker* (flylint--get-checker checker)))
     (let ((compreg (flylint-checker-composed-error-pattern checker*))
           (regs    (flylint-checker-error-patterns checker*)))
       (promise:async-start
        `(lambda ()
-          (let ((str ,(format "%s\n%s" (nth 1 cmd-res) (nth 2 cmd-res)))
+          (let ((str ,(format "%s\n%s" (nth 1 res) (nth 2 res)))
                 (compreg ,compreg)
                 (regs ',regs)
                 (last-match 0)
