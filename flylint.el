@@ -424,22 +424,22 @@ Promise will resolve list such as (RETURN-CODE OUTPUT)."
                           (if (string-match reg str)
                               (string-to-number (match-string 1 str))
                             nil))))))
-      (promise-chain
-          (promise-race
-           (vector
-            (promise:time-out 10 'timeout)
-            (if stdin-p
-                (apply #'promise:make-process-with-buffer-string
-                       `(,cmd ,(current-buffer) ,@cmd-args))
-              (apply #'promise:make-process
-                     `(,cmd ,@cmd-args)))))
-        (then (lambda (res)
-                (promise-resolve `(0 ,(string-join res "\n"))))
-              (lambda (reason)
-                (let ((code (funcall exitcode (car-safe reason))))
-                  (if code
-                      (promise-resolve `(,code ,(string-join (cdr reason) "\n")))
-                    (promise-reject `(failed ,reason))))))))))
+      (promise-then
+       (promise-race
+        (vector
+         (promise:time-out 10 'timeout)
+         (if stdin-p
+             (apply #'promise:make-process-with-buffer-string
+                    `(,cmd ,(current-buffer) ,@cmd-args))
+           (apply #'promise:make-process
+                  `(,cmd ,@cmd-args)))))
+       (lambda (res)
+         (promise-resolve `(0 ,(string-join res "\n"))))
+       (lambda (reason)
+         (let ((code (funcall exitcode (car-safe reason))))
+           (if code
+               (promise-resolve `(,code ,(string-join (cdr reason) "\n")))
+             (promise-reject `(failed ,reason)))))))))
 
 (defun flylint--tokenize-output (checker cmd-res)
   "Return promise to tokenize shell output CMD-RES for CHECKER."
