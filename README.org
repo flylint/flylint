@@ -4,7 +4,7 @@
 [[https://github.com/flylint/flylint][https://raw.githubusercontent.com/conao3/files/master/blob/headers/png/flylint.el.png]]
 [[https://github.com/flylint/flylint/blob/master/LICENSE][https://img.shields.io/github/license/flylint/flylint.svg?style=flat-square]]
 [[https://github.com/flylint/flylint/releases][https://img.shields.io/github/tag/flylint/flylint.svg?style=flat-square]]
-[[https://travis-ci.org/flylint/flylint][https://img.shields.io/travis/flylint/flylint/master.svg?style=flat-square]]
+[[https://travis-ci.com/flylint/flylint][https://img.shields.io/travis/flylint/flylint/master.svg?style=flat-square]]
 [[https://app.codacy.com/project/flylint/flylint/dashboard][https://img.shields.io/codacy/grade/62a36f4f04524d5e8c758440e8071c45.svg?logo=codacy&style=flat-square]]
 [[https://twitter.com/conao_3][https://img.shields.io/badge/twitter-@conao__3-blue.svg?logo=twitter&style=flat-square]]
 [[https://conao3-support.slack.com/join/shared_invite/enQtNjUzMDMxODcyMjE1LWUwMjhiNTU3Yjk3ODIwNzAxMTgwOTkxNmJiN2M4OTZkMWY0NjI4ZTg4MTVlNzcwNDY2ZjVjYmRiZmJjZDU4MDE][https://img.shields.io/badge/chat-on_slack-blue.svg?logo=slack&style=flat-square]]
