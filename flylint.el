@@ -472,7 +472,10 @@ Promise will reject when no-token but command doesn't exit code 0."
          (promise-reject `(fail-tokenize-unknown ,reason ,cmd-res)))))))
 
 (defun flylint--parse-output (checker tokens)
-  "Return promise to parse TOKENS for CHECKER."
+  "Return promise to parse TOKENS for CHECKER.
+
+Promise will resolve list of (TYPE BUFFER LINE COLUMN MESSAGE)
+Promise will reject when fail child Emacs process."
   (let ((checker* (flylint--get-checker checker)))
     (let ((regs (flylint-checker-error-patterns checker*)))
       (promise-then
