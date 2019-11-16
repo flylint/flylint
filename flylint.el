@@ -467,7 +467,9 @@ Promise will reject when no-token but command doesn't exit code 0."
          (if res
              (promise-resolve res)
            (unless (zerop (car cmd-res))
-             (promise-reject `(fail-tokenize ,cmd-res)))))))))
+             (promise-reject `(fail-tokenize ,cmd-res)))))
+       (lambda (res)
+         (promise-reject `(fail-tokenize-unknown ,cmd-res)))))))
 
 (defun flylint--parse-output (checker tokens)
   "Return promise to parse TOKENS for CHECKER."
