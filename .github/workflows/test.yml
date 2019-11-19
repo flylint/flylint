@@ -20,14 +20,28 @@ jobs:
           - emacs_version: snapshot
             allow_failure: true
     steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1.1.1
+      with:
+        python-version: 3.6
     - uses: purcell/setup-emacs@master
       with:
         version: ${{ matrix.emacs_version }}
 
-    - uses: actions/checkout@v1
+    - name: Install test dependency
+      run: |
+        which env
+        which python
+        cd
+        git clone https://github.com/cask/cask.git .cask
+        export PATH='$HOME/.cask/bin:$PATH'
+        cd -
+        ~/.cask/bin/cask help
+
     - name: Run tests
       if: matrix.allow_failure != true
       run: 'make test'
+
     - name: Run tests (allow failure)
       if: matrix.allow_failure == true
       run: 'make test || true'
