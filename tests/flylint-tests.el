@@ -27,8 +27,12 @@
 
 ;;; Code:
 
+(require 'buttercup)
 (require 'flylint)
 
+(describe "A suite"
+  (it "contains a spec with an expectation"
+      (expect t :to-be t)))
 
 ;; (provide 'flylint-tests)
 
