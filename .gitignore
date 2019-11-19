@@ -1,3 +1,5 @@
+## .gitignore
+
 *-autoloads.el
 *.elc
 /.cask
