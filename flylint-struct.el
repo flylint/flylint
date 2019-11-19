@@ -60,7 +60,7 @@ Slots:
      The buffer that the error was reported for, as buffer object.
 
 `category' (optional)
-     An ID identifying the kind of error.
+     An category identifying the kind of error.
 
 `group' (optional)
      A symbol identifying the group the error belongs to.

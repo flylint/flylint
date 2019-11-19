@@ -520,10 +520,10 @@ ERRORS format is return value `flylint--promise-parse-output'.
 
 Promise will resolve with t if noerror.
 Promise will reject when fail display ERRORS."
-  (pcase-dolist (`(,level ,filename ,line ,column ,message ,id) errors)
+  (pcase-dolist (`(,level ,filename ,line ,column ,message ,category) errors)
     (flylint--add-overlay
      (flylint-error-new line column level message
-                        :filename filename :id id))))
+                        :filename filename :category category))))
 
 (async-defun flylint--run (checker)
   "Run CHECKER async."
