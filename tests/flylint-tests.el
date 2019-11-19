@@ -27,7 +27,6 @@
 
 ;;; Code:
 
-(load "cort-test")
 (require 'flylint)
 
 
