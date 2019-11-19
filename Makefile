@@ -59,7 +59,6 @@ help:
 
 .cask: Cask
 	cask install
-	find $@ -name "*.elc" | xargs rm -f
 	touch $@
 
 ##############################
