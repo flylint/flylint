@@ -44,11 +44,17 @@ We welcome PR!
 
 *** Require tools for testing
 - cask
-  #+begin_src shell
-    cd ~/
-    hub clone cask/cask
-    export PATH="$HOME/.cask/bin:$PATH"
-  #+end_src
+  - install via brew
+    #+begin_src shell
+      brew install cask
+    #+end_src
+
+  - manual install
+    #+begin_src shell
+      cd ~/
+      hub clone cask/cask
+      export PATH="$HOME/.cask/bin:$PATH"
+    #+end_src
 
 *** Running test
 Below operation flow is recommended.
