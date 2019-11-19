@@ -1,4 +1,4 @@
-;;; flylint-tests.el --- Test definitions for flylint  -*- lexical-binding: t; -*-
+;;; flylint-test.el --- Test definitions for flylint  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Flylint Community
 
@@ -34,10 +34,10 @@
   (it "contains a spec with an expectation"
       (expect t :to-be t)))
 
-;; (provide 'flylint-tests)
+;; (provide 'flylint-test)
 
 ;; Local Variables:
 ;; indent-tabs-mode: nil
 ;; End:
 
-;;; flylint-tests.el ends here
+;;; flylint-test.el ends here
