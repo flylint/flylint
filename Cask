@@ -3,8 +3,6 @@
 (source gnu)
 (source melpa)
 
-(package "flylint" "0.0.1" "Asynchronous on-the-fly inspection framework")
-
 (package-file "flylint.el")
 
 (development
