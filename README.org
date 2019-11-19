@@ -64,6 +64,10 @@ Below operation flow is recommended.
   make test                         # Test flylint via multi version Emacs
   git commit -am "brabra"           # Commit (auto-run test before commit)
   # </edit loop>
+
+  hub fork                          # Create fork at GitHub
+  git push [user] [feature-branch]  # Push feature-branch to your fork
+  hub pull-request                  # Create pull-request
 #+end_src
 
 ** Migration
