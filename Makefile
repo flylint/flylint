@@ -17,9 +17,9 @@
 
 all:
 
-PACKAGE_NAME := flylint
 REPO_USER    := flylint
-REPO_NAME    := $(PACKAGE_NAME)
+PACKAGE_NAME := flylint
+REPO_NAME    := flylint
 
 EMACS        ?= emacs
 ELS          := $(shell cask files)
