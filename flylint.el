@@ -417,7 +417,7 @@ Promise will reject if CHECKER missing."
   (promise-new
    (lambda (resolve reject)
      (if-let (checker* (alist-get checker flylint-checker-alist))
-         (funcall resolve checker*)
+         (funcall resolve (list checker*))
        (funcall reject `(missing-checker ,checker))))))
 
 (defun flylint--promise-exec-command (checker)
