@@ -184,14 +184,6 @@ ERROR-PATTERNS ENABLED MODES)"
     `(setf (alist-get ',name flylint-checker-alist)
            (flylint-checker--new ,@args*))))
 
-(defconst flylint-checker-font-lock-keywords
-  '(("(\\(flylint-checker-define\\)\\_>[ \t']*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
-     (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face nil t)))
-  "A font-lock regexp of `flylint-checker-define' for `emacs-lisp-mode'.")
-
-(font-lock-add-keywords 'emacs-lisp-mode flylint-checker-font-lock-keywords)
-
 
 ;;; Main
 
