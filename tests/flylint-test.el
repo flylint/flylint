@@ -34,6 +34,21 @@
   (it "contains a spec with an expectation"
       (expect t :to-be t)))
 
+(xdescribe "A checker"
+  :var ((checker 'c/c++-gcc))
+  (it "can get"
+    (promise-chain (flylint--promise-get-checker checker)
+      (then (lambda (res)
+              (flylint--debug 'checker
+                "done: %s" (flylint-checker-name (car res))) res)
+            (lambda (res)
+              (flylint--debug 'checker
+                "fail: %s" (flylint-checker-name (car res)))) res)
+      (then (lambda (res)
+              (let ((check (string= "done: c/c++-gcc" res)))
+                (flylint--debug 'check
+                  "check: %s" check)))))))
+
 ;; (provide 'flylint-test)
 
 ;; Local Variables:
