@@ -28,7 +28,7 @@ GIT_HOOKS    := pre-commit
 
 ##################################################
 
-.PHONY: all
+.PHONY: all help test clean
 
 all: git-hook help
 
