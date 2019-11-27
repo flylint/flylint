@@ -420,8 +420,8 @@ Promise will reject if CHECKER missing with (missing-checker . CHECKER)."
          (funcall resolve (flylint-checker-name checker*))
        (funcall reject `(missing-checker ,checker))))))
 
-(defun flylint--promise-exec-command (checker)
-  "Return promise to exec command for CHECKER*.
+(defun flylint--promise-exec-command (checker buffer)
+  "Return promise to exec command for CHECKER and BUFFER.
 If CHECKER's starndard-input is non-nil, send `current-buffer' to process.
 
 Promise will resolve list such as (RETURN-CODE OUTPUT).
@@ -441,11 +441,12 @@ exit code.)"
        (promise-race
         (vector
          (promise:time-out 10 'timeout)
-         (if stdin-p
-             (apply #'promise:make-process-with-buffer-string
-                    `(,cmd ,(current-buffer) ,@cmd-args))
-           (apply #'promise:make-process
-                  `(,cmd ,@cmd-args)))))
+         (with-current-buffer buffer
+           (if stdin-p
+               (apply #'promise:make-process-with-buffer-string
+                      `(,cmd ,buffer ,@cmd-args))
+             (apply #'promise:make-process
+                    `(,cmd ,@cmd-args))))))
        (lambda (res)
          (promise-resolve `(0 ,(string-join res "\n"))))
        (lambda (reason)
@@ -525,11 +526,11 @@ Promise will reject when fail display ERRORS."
      (flylint-error-new line column level message
                         :filename filename :category category))))
 
-(async-defun flylint--run (checker)
-  "Run CHECKER async."
+(async-defun flylint--run (checker buffer)
+  "Run CHECKER async for BUFFER."
   (condition-case err
       (let* ((res (await (flylint--promise-get-checker checker)))
-             (res (await (flylint--promise-exec-command checker)))
+             (res (await (flylint--promise-exec-command checker buffer)))
              (res (await (flylint--promise-tokenize-output checker res)))
              (res (await (flylint--promise-parse-output checker res)))
              (res (await (flylint--promise-add-overlay checker res)))))
@@ -553,7 +554,7 @@ see `flylint-check-syntax-triger'."
                (funcall condition 'mode-enabled triger))
            (setq-local flylint-running t)
            (dolist (elm flylint-enabled-checkers)
-             (flylint--run elm)))
+             (flylint--run elm (current-buffer))))
           ((funcall condition 'change triger)))))
   (setq-local flylint-running nil))
 
