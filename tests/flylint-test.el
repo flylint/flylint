@@ -30,10 +30,6 @@
 (require 'buttercup)
 (require 'flylint)
 
-(describe "A suite"
-  (it "contains a spec with an expectation"
-      (expect t :to-be t)))
-
 (xdescribe "A checker"
   :var ((checker 'c/c++-gcc))
   (it "can get"
