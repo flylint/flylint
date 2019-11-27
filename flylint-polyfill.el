@@ -27,6 +27,8 @@
 
 ;;; Code:
 
+(require 'warnings)
+
 
 ;;; alist
 (defun flylint--alist-keys (alist)
@@ -39,11 +41,71 @@
 
 
 ;;; error
+(defcustom flylint-debug-buffer "*Flylint Debug*"
+  "Buffer name for flylint debugging."
+  :group 'flylint
+  :type 'string)
+
+(defcustom flylint-minimum-warning-level :debug
+  "Minimum level for `flylint--debug'.
+It should be either :debug, :warning, :error, or :emergency"
+  :group 'flylint
+  :type 'symbol)
+
 (defun flylint--warn (message &rest args)
   "Warn with `flylint' type.
 Display a warning message made from (format-message MESSAGE ARGS...)."
   (apply #'lwarn `(flylint :warning ,message ,@args)))
 
+(defun flylint--debug (&rest args)
+  "Output debug message to `flylint-debug-buffer'.
+
+FORMAT and FORMAT-ARGS passed `format'.
+If BUFFER is specified, output that buffer.
+If LEVEL is specified, output higher than `flylint-minimum-warning-level'.
+If BREAK is non-nil, output page break before output string.
+
+ARGS accept (SYMBOL &rest FORMAT-ARGS &key buffer break).
+
+\(fn SYMBOL FORMAT &rest FORMAT-ARGS &key buffer level break)"
+  (declare (indent defun))
+  (let ((buffer flylint-debug-buffer)
+        (level :debug)
+        (break nil)
+        (symbol 'unknown)
+        format format-args elm)
+    (while (keywordp (setq elm (pop args)))
+      (cond ((eq :buffer elm)
+             (setq buffer (pop args)))
+            ((eq :level elm)
+             (setq level (pop args)))
+            ((eq :break elm)
+             (setq break (pop args)))
+            (t
+             (error "Unknown keyword: %s" elm))))
+    (setq symbol elm)
+    (setq format (pop args))
+    (setq format-args args)
+    (when (<= (warning-numeric-level flylint-minimum-warning-level)
+              (warning-numeric-level level))
+      (with-current-buffer (get-buffer-create buffer)
+        (emacs-lisp-mode)
+        (let ((msg (apply #'format `(,format ,@format-args)))
+              (scroll (equal (point) (point-max))))
+          (prog1 msg
+            (save-excursion
+              (goto-char (point-max))
+              (insert
+               (concat
+                (and break "\n")
+                (format (cadr (assq level warning-levels))
+                        (format warning-type-format symbol))
+                msg))
+              (newline))
+            (when scroll
+              (goto-char (point-max))
+              (set-window-point
+               (get-buffer-window (current-buffer)) (point-max)))))))))
 
 (provide 'flylint-polyfill)
 

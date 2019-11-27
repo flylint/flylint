@@ -203,11 +203,6 @@ If nil, never check syntax automatically.  In this case, use
   :group 'flylint
   :type 'string)
 
-(defcustom flylint-debug-buffer-name "*Flylint debug*"
-  "Buffer name for flylint debugging."
-  :group 'flylint
-  :type 'string)
-
 (defcustom flylint-locate-config-file-functions nil
   "Functions to locate syntax checker configuration files.
 
