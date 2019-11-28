@@ -145,7 +145,7 @@ DOCSTRING is an optional documentation string.
 ARGS is a list of KEY VALUE pairs, described `flylint-checker'.
 
 \(fn NAME [DOCSTRING] &key COMMAND STANDARD-INPUT WORKING-DIRECTORY
-ERROR-PATTERNS ENABLED MODES)"
+ERROR-PATTERNS ERROR-FILTER ENABLED MODES)"
   (declare (indent defun) (doc-string 2))
   (unless (stringp docstring)
     (setq args (append (list docstring) args))
@@ -154,7 +154,7 @@ ERROR-PATTERNS ENABLED MODES)"
   (let* ((keywords (list :name :docstring :command
                          :standard-input :working-directory
                          :error-patterns :composed-error-pattern
-                         :enabled :modes))
+                         :error-filter :enabled :modes))
          (fn (lambda (elm)
                (if (and (listp elm)
                         (member `',(car elm)
@@ -209,6 +209,53 @@ Requires GCC 4.4 or newer.  See URL `https://gcc.gnu.org/'."
    (error   . (line-start (or "<stdin>" (file-name)) ":" line ":" column
                           ": " (or "fatal error" "error") ": " (message) line-end)))
   :modes (c-mode c++-mode))
+
+(defconst flylint-emacs-lisp-check-form
+  '(progn
+     (unwind-protect
+         (let ((byte-compile-dest-file-function
+                (lambda (source)
+                  (let ((tmp
+                         (make-temp-file
+                          (file-name-nondirectory source))))
+                    (push tmp tmp-files)
+                    tmp)))
+               (jka-compr-inhibit t)
+               tmp-files)
+           (when (equal (car command-line-args-left) "--")
+             (setq command-line-args-left
+                   (cdr command-line-args-left)))
+           (unwind-protect
+               (byte-compile-file (car command-line-args-left))
+             (dolist (elm tmp-files)
+               (lambda (elm) (ignore-errors (delete-file elm))))))
+       (setq command-line-args-left nil))))
+
+(flylint-checker-define emacs-lisp
+  "An Emacs Lisp syntax checker using the Emacs Lisp Byte compiler.
+
+See Info Node `(elisp)Byte Compilation'."
+  :command ("emacs"
+            "-Q" "--batch"
+            "--eval" (eval (prin1-to-string
+                            flylint-emacs-lisp-check-form))
+            "--"
+            source-inplace)
+  :error-patterns
+  ((error line-start (file-name) ":" line ":" column ":Error:"
+          (message (zero-or-more not-newline)
+                   (zero-or-more "\n    " (zero-or-more not-newline)))
+          line-end)
+   (warning line-start (file-name) ":" line ":" column ":Warning:"
+            (message (zero-or-more not-newline)
+                     (zero-or-more "\n    " (zero-or-more not-newline)))
+            line-end))
+  :error-filter
+  (lambda (errors)
+    (flylint-fill-empty-line-numbers
+     (flylint-collapse-error-message-whitespace
+      (flylint-sanitize-errors errors))))
+  :modes (emacs-lisp-mode lisp-interaction-mode))
 
 (provide 'flylint-checker)
 

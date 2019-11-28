@@ -127,13 +127,16 @@ Slots:
 `composed-error-pattern'
      Composed error pattern regexp from `error-patterns', as string.
 
+`error-filter'
+     Filter the errors returned by this checker, as function.
+
 `enabled'
      Whether parser enabled, as bool.
 
 `modes'
      What major/minor-mode(s) parser enabled, as list."
   name docstring command standard-input working-directory
-  error-patterns composed-error-pattern enabled modes)
+  error-patterns composed-error-pattern error-filter enabled modes)
 
 (provide 'flylint-struct)
 

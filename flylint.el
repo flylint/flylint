@@ -460,7 +460,7 @@ exit code.)"
 
 Promise will resolve list of tokens as string.
 Promise will reject when no-token but command doesn't exit code 0."
-  (let ((checker* (flylint--get-checker checker)))
+  (let ((cheqcker* (flylint--get-checker checker)))
     (let ((compreg (flylint-checker-composed-error-pattern checker*))
           (regs    (flylint-checker-error-patterns checker*)))
       (promise-then
@@ -491,7 +491,7 @@ Promise will reject when fail child Emacs process."
   (let ((checker* (flylint--get-checker checker)))
     (let ((regs (flylint-checker-error-patterns checker*)))
       (promise-then
-       (promise:async-start
+       (promise:async-starts
         `(lambda ()
            (let ((regs ',regs))
              (mapcar (lambda (str)
