@@ -30,8 +30,18 @@
 (require 'buttercup)
 (require 'flylint)
 
+(defconst flylint-test-dir (file-name-directory
+                            (cond
+                             (load-in-progress load-file-name)
+                             ((and (boundp 'byte-compile-current-file)
+                                   byte-compile-current-file)
+                              byte-compile-current-file)
+                             (:else (buffer-file-name)))))
+
 (xdescribe "A checker"
-  :var ((checker 'c/c++-gcc))
+  :var ((checker 'c/c++-gcc)
+        (buffer (find-file-noselect
+                 (expand-file-name "error-sample.el" flylint-test-dir))))
   (it "can get"
     (promise-chain (flylint--promise-get-checker checker)
       (then (lambda (res)
