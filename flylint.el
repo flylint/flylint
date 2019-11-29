@@ -428,8 +428,10 @@ Promise will resolve list such as (RETURN-CODE OUTPUT).
 Promise will reject when command exit with unknown event (cannot parse
 exit code.)"
   (let ((checker* (flylint--get-checker checker)))
-    (let ((cmd      (car (flylint-checker-command checker*)))
-          (cmd-args (cdr (flylint-checker-command checker*)))
+    (let ((cmd      (flylint--interpret-sexp
+                     `(,(car (flylint-checker-command checker*))) checker))
+          (cmd-args (flylint--interpret-sexp
+                     (cdr (flylint-checker-command checker*)) checker))
           (stdin-p  (flylint-checker-standard-input checker*))
           (exitcode (lambda (str)
                       (when (stringp str)
@@ -460,7 +462,7 @@ exit code.)"
 
 Promise will resolve list of tokens as string.
 Promise will reject when no-token but command doesn't exit code 0."
-  (let ((cheqcker* (flylint--get-checker checker)))
+  (let ((checker* (flylint--get-checker checker)))
     (let ((compreg (flylint-checker-composed-error-pattern checker*))
           (regs    (flylint-checker-error-patterns checker*)))
       (promise-then
