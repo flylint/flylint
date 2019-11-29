@@ -210,26 +210,22 @@ Requires GCC 4.4 or newer.  See URL `https://gcc.gnu.org/'."
                           ": " (or "fatal error" "error") ": " (message) line-end)))
   :modes (c-mode c++-mode))
 
-(defconst flylint-emacs-lisp-check-form
+(defconst flylint-checker-emacs-lisp--check-form
   '(progn
-     (unwind-protect
-         (let ((byte-compile-dest-file-function
-                (lambda (source)
-                  (let ((tmp
-                         (make-temp-file
-                          (file-name-nondirectory source))))
-                    (push tmp tmp-files)
-                    tmp)))
-               (jka-compr-inhibit t)
-               tmp-files)
-           (when (equal (car command-line-args-left) "--")
-             (setq command-line-args-left
-                   (cdr command-line-args-left)))
-           (unwind-protect
-               (byte-compile-file (car command-line-args-left))
-             (dolist (elm tmp-files)
-               (lambda (elm) (ignore-errors (delete-file elm))))))
-       (setq command-line-args-left nil))))
+     (defun read-line () (read-string ""))
+     (defun get-stdin-buffer ()
+       (with-current-buffer (get-buffer-create "*stdin*")
+         (prog1 (current-buffer)
+           (ignore-errors
+             (erase-buffer)
+             (let (line)
+               (while (setq line (read-line))
+                 (insert line "\n")))))))
+
+     (with-current-buffer (get-stdin-buffer)
+       (require 'bytecomp)
+       (let ((byte-compile-current-file (buffer-name)))
+         (byte-compile-from-buffer (current-buffer))))))
 
 (flylint-checker-define emacs-lisp
   "An Emacs Lisp syntax checker using the Emacs Lisp Byte compiler.
@@ -238,7 +234,7 @@ See Info Node `(elisp)Byte Compilation'."
   :command ("emacs"
             "-Q" "--batch"
             "--eval" (eval (prin1-to-string
-                            flylint-emacs-lisp-check-form))
+                            flylint-checker-emacs-lisp--check-form))
             "--"
             source-inplace)
   :error-patterns
