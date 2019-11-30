@@ -63,6 +63,7 @@ Display a warning message made from (format-message MESSAGE ARGS...)."
 FORMAT and FORMAT-ARGS passed `format'.
 If BUFFER is specified, output that buffer.
 If LEVEL is specified, output higher than `flylint-minimum-warning-level'.
+If POPUP is non-nil, `display-buffer' debug buffer.
 If BREAK is non-nil, output page break before output string.
 
 ARGS accept (SYMBOL &rest FORMAT-ARGS &key buffer break).
@@ -71,12 +72,15 @@ ARGS accept (SYMBOL &rest FORMAT-ARGS &key buffer break).
   (declare (indent defun))
   (let ((buffer flylint-debug-buffer)
         (level :debug)
+        (popup nil)
         (break nil)
         (symbol 'unknown)
         format format-args elm)
     (while (keywordp (setq elm (pop args)))
       (cond ((eq :buffer elm)
              (setq buffer (pop args)))
+            ((eq :popup elm)
+             (setq popup (pop args)))
             ((eq :level elm)
              (setq level (pop args)))
             ((eq :break elm)
@@ -86,10 +90,12 @@ ARGS accept (SYMBOL &rest FORMAT-ARGS &key buffer break).
     (setq symbol elm)
     (setq format (pop args))
     (setq format-args args)
-    (when (<= (warning-numeric-level flylint-minimum-warning-level)
-              (warning-numeric-level level))
-      (with-current-buffer (get-buffer-create buffer)
-        (emacs-lisp-mode)
+    (with-current-buffer (get-buffer-create buffer)
+      (emacs-lisp-mode)
+      (when popup
+        (display-buffer (current-buffer)))
+      (when (<= (warning-numeric-level flylint-minimum-warning-level)
+                (warning-numeric-level level))
         (let ((msg (apply #'format `(,format ,@format-args)))
               (scroll (equal (point) (point-max))))
           (prog1 msg
