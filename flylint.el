@@ -418,7 +418,7 @@ Promise will reject if CHECKER missing with (missing-checker . CHECKER)."
    (lambda (resolve reject)
      (if (alist-get checker flylint-checker-alist)
          (funcall resolve checker)
-       (funcall reject `(missing-checker ,checker))))))
+       (funcall reject `(fail-get-checker ,checker))))))
 
 (defun flylint--promise-exec-command (checker buffer)
   "Return promise to exec command for CHECKER and BUFFER.
@@ -457,7 +457,7 @@ exit code.)"
          (let ((code (funcall exitcode (car-safe reason))))
            (if code
                (promise-resolve `(,code ,(string-join (cdr reason) "\n")))
-             (promise-reject `(fail-exec ,reason)))))))))
+             (promise-reject `(fail-exec (,cmd* ,@cmd-args*) ,reason)))))))))
 
 (defun flylint--promise-tokenize-output (checker cmd-res)
   "Return promise to tokenize shell output CMD-RES for CHECKER.
@@ -483,7 +483,7 @@ Promise will reject when no-token but command doesn't exit code 0."
          (if res
              (promise-resolve res)
            (unless (zerop (car cmd-res))
-             (promise-reject `(fail-tokenize ,cmd-res)))))
+             (promise-reject `(fail-tokenize-nothing ,cmd-res)))))
        (lambda (reason)
          (promise-reject `(fail-tokenize-unknown ,reason ,cmd-res)))))))
 
@@ -540,8 +540,29 @@ Promise will reject when fail display ERRORS."
              (res (await (flylint--promise-add-overlay checker res)))))
     (error
      (pcase err
-       (`(error (missing-checker ,_))
-        (flylint--warn "Missing checker: %s" checker))))))
+       (`(error (fail-get-checker ,checker))
+        (flylint--warn "Missing checker.  checker: %s" checker))
+
+       (`(error (fail-exec ,cmd ,reason))
+        (flylint--warn "Cannot exec external program.
+  checker: %s\n  command: %s\n  reason: %s" checker (prin1-to-string cmd) (prin1-to-string reason)))
+
+       (`(error (fail-tokenize-nothing ,cmd-res))
+        (let ((exit-code (nth 0 cmd-res))
+              (output    (nth 1 cmd-res)))
+          (flylint--warn "External program returned non-zero, but contained no errors.
+  checker: %s\n  exit-code: %s\n  output: %s"
+                         checker exit-code output)))
+
+       (`(error (fail-tokenize-unknown ,reason ,cmd-res))
+        (flylint--warn "External program exit normally, but cannot tokenize output.
+  checker: %s\n  output: %s  reason: %s"
+                       checker (nth 1 cmd-res) (prin1-to-string reason)))
+
+       (`(error (fail-parse-unknown ,reason ,tokens))
+        (flylint--warn "External program exit normally, and well tokenize, but cannot parse tokens.
+  checker: %s\n  tokens: %s  reason: %s"
+                       checker (prin1-to-string tokens) (prin1-to-string reason)))))))
 
 (defun flylint-run-checkers (triger)
   "Run checkers with TRIGER.
