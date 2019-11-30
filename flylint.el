@@ -586,12 +586,14 @@ Promise will reject when fail display ERRORS."
   checker: %s\n  tokens: %s  reason: %s"
                        checker (prin1-to-string tokens) (prin1-to-string reason)))))))
 
-(defun flylint-run-checkers (triger)
-  "Run checkers with TRIGER.
+(defun flylint-run-checkers (triger &optional buffer)
+  "Run checkers with TRIGER for BUFFER.
+If omit buffer, run checkers for `current-buffer'.
 see `flylint-check-syntax-triger'."
   (interactive (list 'manual))
   (and flylint-mode (not (flylint--running-p))
-       (let ((condition (lambda (elm triger)
+       (let ((buffer* (or buffer (current-buffer)))
+             (condition (lambda (elm triger)
                           (and (eq elm triger)
                                (memq elm flylint-check-syntax-triger)))))
          (cond
@@ -601,7 +603,7 @@ see `flylint-check-syntax-triger'."
                (funcall condition 'mode-enabled triger))
            (setq-local flylint-running t)
            (dolist (elm flylint-enabled-checkers)
-             (flylint--run elm (current-buffer))))
+             (flylint--run elm buffer*)))
           ((funcall condition 'change triger)))))
   (setq-local flylint-running nil))
 
