@@ -40,8 +40,21 @@
 
 (xdescribe "A checker"
   :var ((checker 'c/c++-gcc)
-        (buffer (find-file-noselect
-                 (expand-file-name "error-sample.el" flylint-test-dir))))
+        (buffer  (with-current-buffer (get-buffer-create "*Flylint Test*")
+                   (prog1 (current-buffer)
+                     (erase-buffer)
+                     (insert "\
+#include <iostream>
+
+class FooBar {
+    int asdf;
+};
+
+int main(int argc, const char * argv[]) {
+    FooBaz foobar;
+    return 0;
+}
+")))))
   (it "can get"
     (promise-chain (flylint--promise-get-checker checker)
       (then (lambda (res)
@@ -50,8 +63,54 @@
             (lambda (res)
               (flylint--debug 'checker
                 "fail: %s" (flylint-checker-name (car res)))) res)
+
       (then (lambda (res)
-              (let ((check (string= "done: c/c++-gcc" res)))
+              (let ((check (string= res "done: c/c++-gcc")))
+                (flylint--debug 'check
+                  "check: %s" check))))))
+
+  (it "can exec"
+    (promise-chain (flylint--promise-get-checker checker)
+      (then (lambda (res)
+              (flylint--promise-exec-command checker buffer)))
+
+      (then (lambda (res)
+              (let ((check (equal res '(1 "
+<stdin>: In function ‘int main(int, const char**)’:
+<stdin>:8:5: error: ‘FooBaz’ was not declared in this scope; did you mean ‘FooBar’?
+<stdin>:7:14: warning: unused parameter ‘argc’ [-Wunused-parameter]
+<stdin>:7:33: warning: unused parameter ‘argv’ [-Wunused-parameter]
+"))))
+                (flylint--debug 'check
+                  "check: %s" check))))))
+
+  (it "can tokenize"
+    (promise-chain (flylint--promise-get-checker checker)
+      (then (lambda (res)
+              (flylint--promise-exec-command checker buffer)))
+      (then (lambda (res)
+            (flylint--promise-tokenize-output checker res)))
+
+      (then (lambda (res)
+              (let ((check (equal res '("<stdin>:8:5: error: ‘FooBaz’ was not declared in this scope; did you mean ‘FooBar’?"
+                                        "<stdin>:7:14: warning: unused parameter ‘argc’ [-Wunused-parameter]"
+                                        "<stdin>:7:33: warning: unused parameter ‘argv’ [-Wunused-parameter]"))))
+                (flylint--debug 'check
+                  "check: %s" check))))))
+
+  (it "can parse"
+    (promise-chain (flylint--promise-get-checker checker)
+      (then (lambda (res)
+              (flylint--promise-exec-command checker buffer)))
+      (then (lambda (res)
+              (flylint--promise-tokenize-output checker res)))
+      (then (lambda (res)
+              (flylint--promise-parse-output checker res)))
+
+      (then (lambda (res)
+              (let ((check (equal res '((error nil "8" "5" "‘FooBaz’ was not declared in this scope; did you mean ‘FooBar’?" nil)
+                                        (warning nil "7" "14" "unused parameter ‘argc’ " "-Wunused-parameter")
+                                        (warning nil "7" "33" "unused parameter ‘argv’ " "-Wunused-parameter")))))
                 (flylint--debug 'check
                   "check: %s" check)))))))
 
