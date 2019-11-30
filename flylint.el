@@ -428,17 +428,19 @@ Promise will resolve list such as (RETURN-CODE OUTPUT).
 Promise will reject when command exit with unknown event (cannot parse
 exit code.)"
   (let ((checker* (flylint--get-checker checker)))
-    (let ((cmd      (flylint--interpret-sexp
-                     `(,(car (flylint-checker-command checker*))) checker))
-          (cmd-args (flylint--interpret-sexp
-                     (cdr (flylint-checker-command checker*)) checker))
-          (stdin-p  (flylint-checker-standard-input checker*))
-          (exitcode (lambda (str)
-                      (when (stringp str)
-                        (let ((reg "exited abnormally with code \\([[:digit:]]*\\)\n"))
-                          (if (string-match reg str)
-                              (string-to-number (match-string 1 str))
-                            nil))))))
+    (let* ((cmd      (flylint--interpret-sexp
+                      `(,(car (flylint-checker-command checker*))) checker))
+           (cmd-args (flylint--interpret-sexp
+                      (cdr (flylint-checker-command checker*)) checker))
+           (cmd*     (car cmd))
+           (cmd-args* (append (cdr cmd) cmd-args))
+           (stdin-p  (flylint-checker-standard-input checker*))
+           (exitcode (lambda (str)
+                       (when (stringp str)
+                         (let ((reg "exited abnormally with code \\([[:digit:]]*\\)\n"))
+                           (if (string-match reg str)
+                               (string-to-number (match-string 1 str))
+                             nil))))))
       (promise-then
        (promise-race
         (vector
@@ -446,9 +448,9 @@ exit code.)"
          (with-current-buffer buffer
            (if stdin-p
                (apply #'promise:make-process-with-buffer-string
-                      `(,cmd ,buffer ,@cmd-args))
+                      `(,cmd* ,buffer ,@cmd-args*))
              (apply #'promise:make-process
-                    `(,cmd ,@cmd-args))))))
+                    `(,cmd* ,@cmd-args*))))))
        (lambda (res)
          (promise-resolve `(0 ,(string-join res "\n"))))
        (lambda (reason)
