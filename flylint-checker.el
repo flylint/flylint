@@ -234,9 +234,8 @@ See Info Node `(elisp)Byte Compilation'."
   :command ("emacs"
             "-Q" "--batch"
             "--eval" (eval (prin1-to-string
-                            flylint-checker-emacs-lisp--check-form))
-            "--"
-            source-inplace)
+                            flylint-checker-emacs-lisp--check-form)))
+  :standard-input t
   :error-patterns
   ((error line-start (file-name) ":" line ":" column ":Error:"
           (message (zero-or-more not-newline)
