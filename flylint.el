@@ -596,6 +596,11 @@ see `flylint-check-syntax-triger'."
              (condition (lambda (elm triger)
                           (and (eq elm triger)
                                (memq elm flylint-check-syntax-triger)))))
+         (flylint--debug :break t 'run-checkers
+           "((:triger %s)\n (:buffer* %s)\n (:checkers %s))"
+           (prin1-to-string triger)
+           (prin1-to-string buffer*)
+           (prin1-to-string flylint-enabled-checkers))
          (cond
           ((or (eq 'manual triger)
                (funcall condition 'save triger)
