@@ -106,8 +106,7 @@ ARGS accept (SYMBOL &rest FORMAT-ARGS &key buffer break).
                 (and break "\n")
                 (format (cadr (assq level warning-levels))
                         (format warning-type-format symbol))
-                msg))
-              (newline))
+                "\n" msg "\n")))
             (when scroll
               (goto-char (point-max))
               (set-window-point
