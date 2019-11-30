@@ -495,7 +495,7 @@ Promise will reject when fail child Emacs process."
   (let ((checker* (flylint--get-checker checker)))
     (let ((regs (flylint-checker-error-patterns checker*)))
       (promise-then
-       (promise:async-starts
+       (promise:async-start
         `(lambda ()
            (let ((regs ',regs))
              (mapcar (lambda (str)
