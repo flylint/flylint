@@ -100,13 +100,15 @@ ARGS accept (SYMBOL &rest FORMAT-ARGS &key buffer break).
               (scroll (equal (point) (point-max))))
           (prog1 msg
             (save-excursion
-              (goto-char (point-max))
-              (insert
-               (concat
-                (and break "\n")
-                (format (cadr (assq level warning-levels))
-                        (format warning-type-format symbol))
-                "\n" msg "\n")))
+              (let ((start (point-max)))
+                (goto-char (point-max))
+                (insert
+                 (concat
+                  (and break "\n")
+                  (format (cadr (assq level warning-levels))
+                          (format warning-type-format symbol))
+                  "\n" msg "\n"))
+                (indent-region start (point))))
             (when scroll
               (goto-char (point-max))
               (set-window-point
