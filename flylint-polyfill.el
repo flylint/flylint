@@ -93,9 +93,9 @@ If LEVEL is specified, output higher than `flylint-minimum-warning-level'.
 If POPUP is non-nil, `display-buffer' debug buffer.
 If BREAK is non-nil, output page break before output string.
 
-ARGS accept (SYMBOL &rest FORMAT-ARGS &key buffer break).
+ARGS accept (SYMBOL &key buffer level break &rest FORMAT-ARGS).
 
-\(fn SYMBOL FORMAT &rest FORMAT-ARGS &key buffer level break)"
+\(fn &key buffer level break SYMBOL FORMAT &rest FORMAT-ARGS)"
   (declare (indent defun))
   (let ((buffer flylint-debug-buffer)
         (level :debug)
