@@ -516,22 +516,22 @@ Promise will reject when fail child Emacs process."
        (promise:async-start
         `(lambda ()
            (let ((regs ',regs))
-             (mapcar (lambda (str)
-                       (car
-                        (delq nil
-                              (mapcar
-                               (lambda (elm)
-                                 (let ((type (car elm))
-                                       (reg  (cdr elm)))
-                                   (when (string-match reg str)
-                                     `(,type
-                                       ,(match-string 1 str)
-                                       ,(match-string 2 str)
-                                       ,(match-string 3 str)
-                                       ,(match-string 4 str)
-                                       ,(match-string 5 str)))))
-                               regs))))
-                     ',tokens))))
+             (delq nil
+                   (mapcan
+                    (lambda (str)
+                      (mapcar
+                       (lambda (elm)
+                         (let ((type (car elm))
+                               (reg  (cdr elm)))
+                           (when (string-match reg str)
+                             `(,type
+                               ,(match-string 1 str)
+                               ,(match-string 2 str)
+                               ,(match-string 3 str)
+                               ,(match-string 4 str)
+                               ,(match-string 5 str)))))
+                       regs))
+                    ',tokens)))))
        (lambda (res)
          (promise-resolve res))
        (lambda (reason)
