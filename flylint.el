@@ -415,7 +415,7 @@ are substituted within the body of cells!"
 Promise will resolve CHECKER if exists.
 Promise will reject if CHECKER missing with (missing-checker . CHECKER)."
   (flylint--debug 'promise-get-checker
-    (flylint-p-plist-to-string `(:checker ,checker)))
+    (flylint-p-plist-to-string (list :checker checker)))
   (promise-new
    (lambda (resolve reject)
      (if (alist-get checker flylint-checker-alist)
@@ -444,11 +444,11 @@ exit code.)"
                                (string-to-number (match-string 1 str))
                              nil))))))
       (flylint--debug 'promise-exec-command
-        "((:checker %s) (:stdin-p %s)\n (:cmd* %s)\n (:cmd-args* %s))"
-        (prin1-to-string checker)
-        (prin1-to-string stdin-p)
-        (prin1-to-string cmd*)
-        (prin1-to-string cmd-args*))
+        (flylint-p-plist-to-string
+         (list :checker checker
+               :stdin-p stdin-p
+               :cmd* cmd*
+               :cmd-args* cmd-args*)))
       (promise-then
        (promise-race
         (vector
@@ -476,11 +476,11 @@ Promise will reject when no-token but command doesn't exit code 0."
     (let ((compreg (flylint-checker-composed-error-pattern checker*))
           (regs    (flylint-checker-error-patterns checker*)))
       (flylint--debug 'promise-tokenize-output
-        "((:checker %s) (:return-code %s)\n (:stdout %s)\n (:stderr %s))"
-        (prin1-to-string checker)
-        (prin1-to-string (nth 0 cmd-res))
-        (prin1-to-string (nth 1 cmd-res))
-        (prin1-to-string (nth 2 cmd-res)))
+        (flylint-p-plist-to-stirng
+         (list :checker checker
+               :return-code (nth 0 cmd-res)
+               :stdout (nth 1 cmd-res)
+               :stderr (nth 2 cmd-res))))
       (promise-then
        (promise:async-start
         `(lambda ()
@@ -509,9 +509,9 @@ Promise will reject when fail child Emacs process."
   (let ((checker* (flylint--get-checker checker)))
     (let ((regs (flylint-checker-error-patterns checker*)))
       (flylint--debug 'promise-parse-output
-        "((:checker %s)\n (:tokens %s))"
-        (prin1-to-string checker)
-        (pp-to-string tokens))
+        (flylint-p-plist-to-stirng
+         (list :checker checker
+               :tokens tokens)))
       (promise-then
        (promise:async-start
         `(lambda ()
@@ -544,9 +544,9 @@ ERRORS format is return value `flylint--promise-parse-output'.
 Promise will resolve with t if noerror.
 Promise will reject when fail display ERRORS."
   (flylint--debug 'promise-add-overlay
-    "((:checker %s)\n  (:errors %s))"
-    (prin1-to-string checker)
-    (pp-to-string errors))
+    (flylint-p-plist-to-stirng
+     (list :checker checker
+           :errors errors)))
   (pcase-dolist (`(,level ,filename ,line ,column ,message ,category) errors)
     (flylint--add-overlay
      (flylint-error-new line column level message
