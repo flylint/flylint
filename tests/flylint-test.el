@@ -59,10 +59,10 @@ int main(int argc, const char * argv[]) {
     (promise-chain (flylint--promise-get-checker checker)
       (then (lambda (res)
               (flylint--debug 'checker
-                "done: %s" (flylint-checker-name (car res))) res)
+                "done: %s" (symbol-name res)))
             (lambda (res)
               (flylint--debug 'checker
-                "fail: %s" (flylint-checker-name (car res)))) res)
+                "fail: %s" (symbol-name res))))
 
       (then (lambda (res)
               (let ((check (string= res "done: c/c++-gcc")))
