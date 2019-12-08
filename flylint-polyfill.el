@@ -22,7 +22,7 @@
 
 ;;; Commentary:
 
-;;
+;; Flylint is alternative of Flymake and Flycheck.
 
 
 ;;; Code:
