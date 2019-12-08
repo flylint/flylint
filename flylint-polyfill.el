@@ -140,8 +140,8 @@ ARGS accept (SYMBOL &key buffer level break &rest FORMAT-ARGS).
                   (and break "\n")
                   (format (cadr (assq level warning-levels))
                           (format warning-type-format symbol))
-                  "\n" msg "\n"))
-                (indent-region start (point))))
+                  "\n" msg))
+                (unless (and (bolp) (eolp)) (newline))))
             (when scroll
               (goto-char (point-max))
               (set-window-point
