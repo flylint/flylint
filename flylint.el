@@ -595,26 +595,26 @@ Promise will reject when fail display ERRORS."
 If omit buffer, run checkers for `current-buffer'.
 see `flylint-check-syntax-triger'."
   (interactive (list 'manual))
-  (flylint--debug :break t 'run-checkers
-    (flylint-p-plist-to-stirng
-     (list :triger triger
-           :buffer buffer
-           :checkers flylint-enabled-checkers)))
-  (and flylint-mode (not (flylint--running-p))
-       (let ((buffer* (or buffer (current-buffer)))
-             (condition (lambda (elm triger)
-                          (and (eq elm triger)
-                               (memq elm flylint-check-syntax-triger)))))
-         (cond
-          ((or (eq 'manual triger)
-               (funcall condition 'save triger)
-               (funcall condition 'new-line triger)
-               (funcall condition 'mode-enabled triger))
-           (setq-local flylint-running t)
-           (dolist (elm flylint-enabled-checkers)
-             (flylint--run elm buffer*)))
-          ((funcall condition 'change triger)))))
-  (setq-local flylint-running nil))
+  (with-current-buffer (or buffer (current-buffer))
+    (flylint--debug :break t 'run-checkers
+      (flylint-p-plist-to-stirng
+       (list :triger triger
+             :buffer (current-buffer)
+             :checkers flylint-enabled-checkers)))
+    (and flylint-mode (not (flylint--running-p))
+         (let ((condition (lambda (elm triger)
+                            (and (eq elm triger)
+                                 (memq elm flylint-check-syntax-triger)))))
+           (cond
+            ((or (eq 'manual triger)
+                 (funcall condition 'save triger)
+                 (funcall condition 'new-line triger)
+                 (funcall condition 'mode-enabled triger))
+             (setq-local flylint-running t)
+             (dolist (elm flylint-enabled-checkers)
+               (flylint--run elm (current-buffer))))
+            ((funcall condition 'change triger)))))
+    (setq-local flylint-running nil)))
 
 (defun flylint--handle-save ()
   "Handle a buffer save."
