@@ -554,6 +554,10 @@ Promise will reject when fail display ERRORS."
 
 (async-defun flylint--run (checker buffer)
   "Run CHECKER async for BUFFER."
+  (flylint--debug 'run
+    (flylint-p-plist-to-stirng
+     (list :checker checker
+           :buffer buffer)))
   (condition-case err
       (let* ((res (await (flylint--promise-get-checker checker)))
              (res (await (flylint--promise-exec-command checker buffer)))
@@ -591,16 +595,16 @@ Promise will reject when fail display ERRORS."
 If omit buffer, run checkers for `current-buffer'.
 see `flylint-check-syntax-triger'."
   (interactive (list 'manual))
+  (flylint--debug :break t 'run-checkers
+    (flylint-p-plist-to-stirng
+     (list :triger triger
+           :buffer buffer
+           :checkers flylint-enabled-checkers)))
   (and flylint-mode (not (flylint--running-p))
        (let ((buffer* (or buffer (current-buffer)))
              (condition (lambda (elm triger)
                           (and (eq elm triger)
                                (memq elm flylint-check-syntax-triger)))))
-         (flylint--debug :break t 'run-checkers
-           "((:triger %s)\n (:buffer* %s)\n (:checkers %s))"
-           (prin1-to-string triger)
-           (prin1-to-string buffer*)
-           (prin1-to-string flylint-enabled-checkers))
          (cond
           ((or (eq 'manual triger)
                (funcall condition 'save triger)
