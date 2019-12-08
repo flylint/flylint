@@ -55,6 +55,12 @@
      (delete-trailing-whitespace)
      (buffer-substring-no-properties (point-min) (point-max))))
 
+(defmacro flylint-p-plist-to-string (form)
+  "Output the pretty-printed representation of FORM suitable for plist.
+See `flylint-p-plist' to get more info."
+  `(with-output-to-string
+     (flylint-p-plist ,form)))
+
 (defun flylint-p-plist (form)
   "Output the pretty-printed representation of FORM suitable for plist."
   (progn

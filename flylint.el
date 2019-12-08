@@ -415,7 +415,7 @@ are substituted within the body of cells!"
 Promise will resolve CHECKER if exists.
 Promise will reject if CHECKER missing with (missing-checker . CHECKER)."
   (flylint--debug 'promise-get-checker
-    "(:checker %s)" (prin1-to-string checker))
+    (flylint-p-plist-to-string `(:checker ,checker)))
   (promise-new
    (lambda (resolve reject)
      (if (alist-get checker flylint-checker-alist)
