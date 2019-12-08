@@ -30,7 +30,7 @@
 (cl-defstruct (flylint-error
                (:constructor nil)
                (:constructor flylint-error-new
-                             (line column level message
+                             (level line column message
                                    &key checker category group corrections
                                    (filename (buffer-file-name))
                                    (buffer (current-buffer))))
@@ -38,26 +38,26 @@
   "Structure representing an error reported by a syntax checker.
 Slots:
 
+`level'
+     The error level, as either `info', `warning' or `error'.
+
 `line'
      The line number the error refers to, as number.
 
 `column'
      The column number the error refers to, as number.
 
-`level'
-     The error level, as either `info', `warning' or `error'.
-
 `message'
      The error message as a string, if any.
 
-`checker'
-     The syntax checker which reported this error, as symbol.
-
-`filename'
+`filename' (optional)
      The file name the error refers to, as string.
 
-`buffer'
+`buffer' (optional)
      The buffer that the error was reported for, as buffer object.
+
+`checker' (optional)
+     The syntax checker which reported this error, as symbol.
 
 `category' (optional)
      An category identifying the kind of error.
@@ -72,14 +72,18 @@ Slots:
 
 `corrections' (optional)
      Recommend corrections (list of `flylint-correction')."
-  line column level message checker category group filename buffer corrections)
+  level line column message
+  checker category group corrections filename buffer)
 
 
 
 (cl-defstruct (flylint-correction
                (:constructor nil)
                (:constructor flylint-correction-new
-                             (beg end replace &key (buffer (current-buffer))))
+                             (beg end replace
+                                  &key
+                                  (filename (buffer-file-name))
+                                  (buffer (current-buffer))))
                (:copier nil))
   "Structure representing a recommended correction.
 
@@ -93,7 +97,10 @@ Slots:
 `replace'
      Replace string as string.
 
-`buffer'
+`filename' (optional)
+     The file name the error refers to, as string.
+
+`buffer' (optional)
      Target buffer as buffer object."
   beg end replace buffer)
 
