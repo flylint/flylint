@@ -524,12 +524,13 @@ Promise will reject when fail child Emacs process."
                          (let ((type (car elm))
                                (reg  (cdr elm)))
                            (when (string-match reg str)
-                             `(,type
-                               ,(match-string 1 str)
-                               ,(match-string 2 str)
-                               ,(match-string 3 str)
-                               ,(match-string 4 str)
-                               ,(match-string 5 str)))))
+                             `(,type                   ; level
+                               ,(match-string 1 str)   ; filename
+                               ,(match-string 2 str)   ; line
+                               ,(match-string 3 str)   ; column
+                               ,(match-string 4 str)   ; message
+                               ,(match-string 5 str)   ; category
+                               ))))
                        regs))
                     ',tokens)))))
        (lambda (res)
