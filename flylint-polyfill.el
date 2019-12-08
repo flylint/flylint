@@ -40,6 +40,33 @@
   (mapcar 'cdr alist))
 
 
+;;; p
+(defmacro with-p--working-buffer (form &rest body)
+  "Insert FORM, execute BODY, return `buffer-string'."
+  (declare (indent 1) (debug t))
+  `(with-temp-buffer
+     (lisp-mode-variables nil)
+     (set-syntax-table emacs-lisp-mode-syntax-table)
+     (let ((print-escape-newlines p-escape-newlines)
+           (print-quoted t))
+       (prin1 ,form (current-buffer))
+       (goto-char (point-min)))
+     (progn ,@body)
+     (delete-trailing-whitespace)
+     (buffer-substring-no-properties (point-min) (point-max))))
+
+(defun flylint-p-plist (form)
+  "Output the pretty-printed representation of FORM suitable for plist."
+  (progn
+    (let ((str (with-p--working-buffer form
+                 (forward-char)
+                 (ignore-errors
+                   (while t (forward-sexp 2) (insert "\n")))
+                 (delete-char -1))))
+      (princ (concat str "\n")))
+    nil))
+
+
 ;;; error
 (defcustom flylint-debug-buffer "*Flylint Debug*"
   "Buffer name for flylint debugging."
