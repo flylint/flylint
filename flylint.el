@@ -413,7 +413,7 @@ are substituted within the body of cells!"
   "Return promise to search CHECKER in `flylint-checker-alist'.
 
 Promise will resolve CHECKER if exists.
-Promise will reject if CHECKER missing with (missing-checker . CHECKER)."
+Promise will reject if CHECKER missing with (missing-checker CHECKER)."
   (flylint--debug 'promise-get-checker
     (flylint-p-plist-to-string (list :checker checker)))
   (promise-new
