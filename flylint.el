@@ -57,7 +57,7 @@
 (defun flylint--add-overlay (err)
   "Add overlay for ERR."
   (flylint--debug 'promise-add-overlay
-    (flylint-p-plist-to-stirng
+    (flylint-p-plist-to-string
      (list :error err)))
   (if (not (flylint-error-p err))
       (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but not")
@@ -479,7 +479,7 @@ Promise will reject when no-token but command doesn't exit code 0."
     (let ((compreg (flylint-checker-composed-error-pattern checker*))
           (regs    (flylint-checker-error-patterns checker*)))
       (flylint--debug 'promise-tokenize-output
-        (flylint-p-plist-to-stirng
+        (flylint-p-plist-to-string
          (list :checker checker
                :return-code (nth 0 cmd-res)
                :stdout (nth 1 cmd-res)
@@ -512,7 +512,7 @@ Promise will reject when fail child Emacs process."
   (let ((checker* (flylint--get-checker checker)))
     (let ((regs (flylint-checker-error-patterns checker*)))
       (flylint--debug 'promise-parse-output
-        (flylint-p-plist-to-stirng
+        (flylint-p-plist-to-string
          (list :checker checker
                :tokens tokens)))
       (promise-then
@@ -548,7 +548,7 @@ ERRORS format is return value `flylint--promise-parse-output'.
 Promise will resolve with t if noerror.
 Promise will reject when fail display ERRORS."
   (flylint--debug 'promise-add-overlay
-    (flylint-p-plist-to-stirng
+    (flylint-p-plist-to-string
      (list :checker checker
            :errors errors)))
   (pcase-dolist (`(,level ,filename ,line ,column ,message ,category) errors)
@@ -563,7 +563,7 @@ Promise will reject when fail display ERRORS."
 (async-defun flylint--run (checker buffer)
   "Run CHECKER async for BUFFER."
   (flylint--debug 'run
-    (flylint-p-plist-to-stirng
+    (flylint-p-plist-to-string
      (list :checker checker
            :buffer buffer)))
   (condition-case err
@@ -605,7 +605,7 @@ see `flylint-check-syntax-triger'."
   (interactive (list 'manual))
   (with-current-buffer (or buffer (current-buffer))
     (flylint--debug :break t 'run-checkers
-      (flylint-p-plist-to-stirng
+      (flylint-p-plist-to-string
        (list :triger triger
              :buffer (current-buffer)
              :checkers flylint-enabled-checkers)))
