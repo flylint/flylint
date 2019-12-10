@@ -554,7 +554,8 @@ Promise will reject when fail display ERRORS."
                         :checker checker
                         :category category
                         :filename filename
-                        :buffer (get-buffer filename)))))
+                        :buffer (get-buffer filename))))
+  (promise-resolve t))
 
 (async-defun flylint--run (checker buffer)
   "Run CHECKER async for BUFFER."
