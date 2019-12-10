@@ -551,9 +551,10 @@ Promise will reject when fail display ERRORS."
   (pcase-dolist (`(,level ,filename ,line ,column ,message ,category) errors)
     (flylint--add-overlay
      (flylint-error-new level line column message
+                        :checker checker
+                        :category category
                         :filename filename
-                        :buffer (get-buffer filename)
-                        :category category))))
+                        :buffer (get-buffer filename)))))
 
 (async-defun flylint--run (checker buffer)
   "Run CHECKER async for BUFFER."
