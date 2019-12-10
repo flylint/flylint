@@ -56,6 +56,9 @@
 
 (defun flylint--add-overlay (err)
   "Add overlay for ERR."
+  (flylint--debug 'promise-add-overlay
+    (flylint-p-plist-to-stirng
+     (list :error err)))
   (if (not (flylint-error-p err))
       (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but not")
     (let* ((fringe-icon
