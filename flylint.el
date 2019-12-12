@@ -54,33 +54,6 @@
 (defvar flylint-temporaries)
 (defvar flylint-running)
 
-(defun flylint--avairable-checkers ()
-  "Get avairable checkers for BUF."
-  (mapcar 'car
-          (cl-remove-if-not
-           (lambda (elm)
-             (pcase-let ((`(_sym . ,checker) elm))
-               (let ((modes (flylint-checker-modes checker))
-                     (_fn   (flylint-checker-enabled checker)))
-                 (apply #'derived-mode-p modes))))
-           flylint-checker-alist)))
-
-(defun flylint--avairable-checkers* ()
-  "Get avairable checkers for BUF and considering :enabled."
-  (mapcar 'car
-          (cl-remove-if-not
-           (lambda (elm)
-             (pcase-let ((`(,_sym . ,checker) elm))
-               (let ((modes (flylint-checker-modes checker))
-                     (fn    (flylint-checker-enabled checker)))
-                 (and (apply #'derived-mode-p modes)
-                      (if fn (funcall fn) t)))))
-           flylint-checker-alist)))
-
-(defun flylint--running-p ()
-  "Return non-nil if flylint running."
-  flylint-running)
-
 
 ;;; Manage temp files/directories
 
@@ -436,6 +409,33 @@ are substituted within the body of cells!"
 
 
 ;;; Management checker
+
+(defun flylint--avairable-checkers ()
+  "Get avairable checkers for BUF."
+  (mapcar 'car
+          (cl-remove-if-not
+           (lambda (elm)
+             (pcase-let ((`(_sym . ,checker) elm))
+               (let ((modes (flylint-checker-modes checker))
+                     (_fn   (flylint-checker-enabled checker)))
+                 (apply #'derived-mode-p modes))))
+           flylint-checker-alist)))
+
+(defun flylint--avairable-checkers* ()
+  "Get avairable checkers for BUF and considering :enabled."
+  (mapcar 'car
+          (cl-remove-if-not
+           (lambda (elm)
+             (pcase-let ((`(,_sym . ,checker) elm))
+               (let ((modes (flylint-checker-modes checker))
+                     (fn    (flylint-checker-enabled checker)))
+                 (and (apply #'derived-mode-p modes)
+                      (if fn (funcall fn) t)))))
+           flylint-checker-alist)))
+
+(defun flylint--running-p ()
+  "Return non-nil if flylint running."
+  flylint-running)
 
 (defun flylint--promise-get-checker (checker)
   "Return promise to search CHECKER in `flylint-checker-alist'.
