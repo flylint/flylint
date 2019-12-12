@@ -117,7 +117,7 @@
 
 ;;; Manage temp files/directories
 
-(defun flylint--temp-remove-all ()
+(defun flylint--remove-temporary-files ()
   "Remove all temp files and directories created by flylint.
 File to remove is listed in `flylint-temporaries' and set to nil."
   (dolist (file-or-dir flylint-temporaries)
@@ -775,7 +775,7 @@ But Flylint-mode is not enabled for
   "Teardown flylint system."
   (pcase-dolist (`(,hook . ,fn) flylint-hooks-alist)
     (remove-hook hook fn 'local))
-  (flylint--temp-remove-all))
+  (flylint--remove-temporary-files))
 
 
 ;;; Main
