@@ -593,16 +593,16 @@ Promise will reject when fail display ERRORS."
 
        (`(error (fail-tokenize-unknown ,reason ,cmd-res))
         (flylint--warn "External program exit normally, but cannot tokenize output.
-  checker: %s\n  output: %s  reason: %s"
+  checker: %s\n  output: %s\n  reason: %s"
                        checker (nth 1 cmd-res) (prin1-to-string reason)))
 
        (`(error (fail-parse-unknown ,reason ,tokens))
         (flylint--warn "External program exit normally, and well tokenize, but cannot parse tokens.
-  checker: %s\n  tokens: %s  reason: %s"
+  checker: %s\n  tokens: %s\n  reason: %s"
                        checker (prin1-to-string tokens) (prin1-to-string reason)))
        (`(error (fail-add-overlay ,errors ,err))
         (flylint--warn "External program exit normally, and well tokenize/parse, but cannot add overlay.
-  checker: %s\n  errors: %s  reason: %s"
+  checker: %s\n  errors: %s\n  reason: %s"
                        checker (prin1-to-string errors) (prin1-to-string err)))
        (_
         (flylint--warn "Something wrong while running checker.
