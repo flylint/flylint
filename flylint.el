@@ -87,6 +87,24 @@
         (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
         (overlay-put ov 'help-echo (flylint-error-message err))))))
 
+(defun flylint--overlays-in (beg end)
+  "Get all flylint overlays between BEG to END."
+  (cl-remove-if-not
+   (lambda (ov)
+     (overlay-get ov 'flylint-overlay))
+   (overlays-in beg end)))
+
+(defun flylint--overlays-at (pos)
+  "Get flylint overlays at POS."
+  (apply #'flylint--add-overlays-in `(,pos ,pos)))
+
+(defun flylint--remove-all-overlays ()
+  "Remove all `flylint' overlays."
+  (flylint--debug 'remove-all-overlays "nil")
+  (save-restriction
+    (widen)
+    (mapc #'delete-overlay (flylint--overlays-in (point-min) (point-max)))))
+
 (defun flylint--avairable-checkers ()
   "Get avairable checkers for BUF."
   (mapcar 'car
@@ -775,7 +793,8 @@ But Flylint-mode is not enabled for
   "Teardown flylint system."
   (pcase-dolist (`(,hook . ,fn) flylint-hooks-alist)
     (remove-hook hook fn 'local))
-  (flylint--remove-temporary-files))
+  (flylint--remove-temporary-files)
+  (flylint--remove-all-overlays))
 
 
 ;;; Main
