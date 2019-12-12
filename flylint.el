@@ -151,7 +151,8 @@ Return directory will added to `flylint-temporaries'."
     (flylint-p-plist-to-string
      (list :error err)))
   (if (not (flylint-error-p err))
-      (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but not")
+      (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but passed %s"
+             (prin1-to-string err))
     (let* ((fringe-icon
             (lambda (level side)
               (when side
