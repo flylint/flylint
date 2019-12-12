@@ -156,10 +156,11 @@ Return directory will added to `flylint-temporaries'."
                                       (flylint--symbol 'fringe-face level))))))
                (region (save-excursion
                          (save-restriction
-                           (widen)
-                           (goto-char (flylint-error-column err))
-                           (bounds-of-thing-at-point
-                            (or flylint-highlight-elements 'symbol)))))
+                           (let ((inhibit-field-text-motion t))
+                             (widen)
+                             (goto-char (flylint-error-column err))
+                             (bounds-of-thing-at-point
+                              (or flylint-highlight-elements 'symbol))))))
                (ov     (when region (make-overlay (car region) (cdr region))))
                (level  (flylint-error-level err)))
           (when ov
