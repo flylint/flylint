@@ -102,7 +102,7 @@ Slots:
 
 `buffer' (optional)
      Target buffer as buffer object."
-  beg end replace buffer)
+  beg end replace filename buffer)
 
 
 
