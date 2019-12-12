@@ -54,57 +54,6 @@
 (defvar flylint-temporaries)
 (defvar flylint-running)
 
-(defun flylint--add-overlay (err)
-  "Add overlay for ERR."
-  (flylint--debug 'promise-add-overlay
-    (flylint-p-plist-to-string
-     (list :error err)))
-  (if (not (flylint-error-p err))
-      (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but not")
-    (let* ((fringe-icon
-            (lambda (level side)
-              (when side
-                (unless (memq side '(left-fringe right-fringe))
-                  (error "Invalid fringe side: %S" side))
-                (propertize "!" 'display
-                            (list side
-                                  'flylint-fringe-double-arrow-bitmap
-                                  (flylint--symbol 'fringe-face level))))))
-           (region (save-excursion
-                     (save-restriction
-                       (widen)
-                       (goto-char (flylint-error-column err))
-                       (bounds-of-thing-at-point
-                        (or flylint-highlight-elements 'symbol)))))
-           (ov     (when region (make-overlay (car region) (cdr region))))
-           (level  (flylint-error-level err)))
-      (when ov
-        (overlay-put ov 'flylint-overlay t)
-        (overlay-put ov 'flylint-error err)
-        (overlay-put ov 'category (flylint--symbol 'ov-category level))
-        (overlay-put ov 'face (when flylint-highlight-elements
-                                (flylint--symbol 'face level)))
-        (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
-        (overlay-put ov 'help-echo (flylint-error-message err))))))
-
-(defun flylint--overlays-in (beg end)
-  "Get all flylint overlays between BEG to END."
-  (cl-remove-if-not
-   (lambda (ov)
-     (overlay-get ov 'flylint-overlay))
-   (overlays-in beg end)))
-
-(defun flylint--overlays-at (pos)
-  "Get flylint overlays at POS."
-  (apply #'flylint--add-overlays-in `(,pos ,pos)))
-
-(defun flylint--remove-all-overlays ()
-  "Remove all `flylint' overlays."
-  (flylint--debug 'remove-all-overlays "nil")
-  (save-restriction
-    (widen)
-    (mapc #'delete-overlay (flylint--overlays-in (point-min) (point-max)))))
-
 (defun flylint--avairable-checkers ()
   "Get avairable checkers for BUF."
   (mapcar 'car
@@ -192,6 +141,63 @@ Return directory will added to `flylint-temporaries'."
   (let* ((tempdir (make-temp-file flylint-temp-prefix 'directory)))
     (push tempdir flylint-temporaries)
     tempdir))
+
+
+;;; Manage overlays
+
+(defun flylint--add-overlay (err)
+  "Add overlay for ERR."
+  (flylint--debug 'promise-add-overlay
+    (flylint-p-plist-to-string
+     (list :error err)))
+  (if (not (flylint-error-p err))
+      (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but not")
+    (let* ((fringe-icon
+            (lambda (level side)
+              (when side
+                (unless (memq side '(left-fringe right-fringe))
+                  (error "Invalid fringe side: %S" side))
+                (propertize "!" 'display
+                            (list side
+                                  'flylint-fringe-double-arrow-bitmap
+                                  (flylint--symbol 'fringe-face level))))))
+           (region (save-excursion
+                     (save-restriction
+                       (widen)
+                       (goto-char (flylint-error-column err))
+                       (bounds-of-thing-at-point
+                        (or flylint-highlight-elements 'symbol)))))
+           (ov     (when region (make-overlay (car region) (cdr region))))
+           (level  (flylint-error-level err)))
+      (when ov
+        (overlay-put ov 'flylint-overlay t)
+        (overlay-put ov 'flylint-error err)
+        (overlay-put ov 'category (flylint--symbol 'ov-category level))
+        (overlay-put ov 'face (when flylint-highlight-elements
+                                (flylint--symbol 'face level)))
+        (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
+        (overlay-put ov 'help-echo (flylint-error-message err))))))
+
+(defun flylint--overlays-in (beg end)
+  "Get all flylint overlays between BEG to END."
+  (cl-remove-if-not
+   (lambda (ov)
+     (overlay-get ov 'flylint-overlay))
+   (overlays-in beg end)))
+
+(defun flylint--overlays-at (pos)
+  "Get flylint overlays at POS."
+  (apply #'flylint--add-overlays-in `(,pos ,pos)))
+
+(defun flylint--remove-all-overlays ()
+  "Remove all `flylint' overlays."
+  (flylint--debug 'remove-all-overlays "nil")
+  (save-restriction
+    (widen)
+    (mapc #'delete-overlay (flylint--overlays-in (point-min) (point-max)))))
+
+
+;;; Misc functioins
 
 (defun flylint--locate-config-file (filename checker)
   "Locate the configuration file FILENAME for CHECKER.
