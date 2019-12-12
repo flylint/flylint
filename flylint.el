@@ -652,7 +652,7 @@ Promise will reject when fail display ERRORS."
           (funcall reject `(fail-add-overlay ,errors ,err))))
        (funcall resolve t)))))
 
-(async-defun flylint--run (checker buffer)
+(async-defun flylint--run-checker (checker buffer)
   "Run CHECKER async for BUFFER."
   (flylint--debug 'run
     (flylint-p-plist-to-string
@@ -747,7 +747,7 @@ see `flylint-check-syntax-triger'."
                   :checkers flylint-enabled-checkers)))
          (setq-local flylint-running t)
          (dolist (elm flylint-enabled-checkers)
-           (flylint--run elm buf))
+           (flylint--run-checker elm buf))
          (setq-local flylint-running nil))))))
 
 (defun flylint--handle-save ()
