@@ -118,6 +118,29 @@ Return directory will added to `flylint-temporaries'."
 
 ;;; Manage overlays
 
+(defun flylint--get-buffer-point (line column)
+  "Get buffer char point for `current-buffer' in LINE and COLUMN."
+  (let ((inhibit-field-text-motion t))
+    (save-restriction
+      (save-excursion
+        (widen)
+        (goto-char (point-min))
+        (forward-line (- line 1))
+        (cond
+         ;; Line beyound EOF
+         ;; Retern EOF
+         ((eobp)
+          (- (point-max) 1))
+         ;; Empty line
+         ;; Return previous line
+         ((eolp)
+          (line-end-position 0))
+         ;; Default
+         (t
+          (let ((pos (min (+ (point) column)
+                          (+ (line-end-position) 1))))
+            (- pos 1))))))))
+
 (defun flylint--add-overlay (err)
   "Add overlay for ERR."
   (flylint--debug 'promise-add-overlay
@@ -145,7 +168,8 @@ Return directory will added to `flylint-temporaries'."
                :buffer (prin1-to-string buf)))))
      (t
       (with-current-buffer buf
-        (let* ((fringe-icon
+        (let* ((inhibit-field-text-motion t)
+               (fringe-icon
                 (lambda (level side)
                   (when side
                     (unless (memq side '(left-fringe right-fringe))
@@ -154,13 +178,15 @@ Return directory will added to `flylint-temporaries'."
                                 (list side
                                       'flylint-fringe-double-arrow-bitmap
                                       (flylint--symbol 'fringe-face level))))))
-               (region (save-excursion
-                         (save-restriction
-                           (let ((inhibit-field-text-motion t))
-                             (widen)
-                             (goto-char (flylint-error-column err))
-                             (bounds-of-thing-at-point
-                              (or flylint-highlight-elements 'symbol))))))
+               (region
+                (save-restriction
+                  (save-excursion
+                    (widen)
+                    (goto-char (flylint--get-buffer-point
+                                (flylint-error-line err)
+                                (flylint-error-column err)))
+                    (bounds-of-thing-at-point
+                     (or flylint-highlight-elements 'symbol)))))
                (ov     (when region (make-overlay (car region) (cdr region))))
                (level  (flylint-error-level err)))
           (when ov
