@@ -597,7 +597,7 @@ Promise will reject when fail display ERRORS."
         (flylint--warn "External program exit normally, and well tokenize, but cannot parse tokens.
   checker: %s\n  tokens: %s  reason: %s"
                        checker (prin1-to-string tokens) (prin1-to-string reason)))
-       (t
+       (_
         (flylint--warn "Something wrong while running checker.
   checker: %s\n  buffer: %s"
                        checker (prin1-to-string buffer)))))))
