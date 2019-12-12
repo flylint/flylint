@@ -701,26 +701,54 @@ Promise will reject when fail display ERRORS."
 If omit buffer, run checkers for `current-buffer'.
 see `flylint-check-syntax-triger'."
   (interactive (list 'manual))
-  (with-current-buffer (or buffer (current-buffer))
-    (flylint--debug :break t 'run-checkers
-      (flylint-p-plist-to-string
-       (list :triger triger
-             :buffer (current-buffer)
-             :checkers flylint-enabled-checkers)))
-    (and flylint-mode (not (flylint--running-p))
-         (let ((condition (lambda (elm triger)
-                            (and (eq elm triger)
-                                 (memq elm flylint-check-syntax-triger)))))
-           (cond
-            ((or (eq 'manual triger)
-                 (funcall condition 'save triger)
-                 (funcall condition 'new-line triger)
-                 (funcall condition 'mode-enabled triger))
-             (setq-local flylint-running t)
-             (dolist (elm flylint-enabled-checkers)
-               (flylint--run elm (current-buffer))))
-            ((funcall condition 'change triger)))))
-    (setq-local flylint-running nil)))
+  (let (buf)
+    (cond
+     ((not (setq buf (get-buffer (or buffer (current-buffer)))))
+      (flylint--debug :break t :level :warning 'run-checkers
+        (flylint-p-plist-to-string
+         (list :error-msg "The running checker request was not executed because target buffer is missing."
+               :triger triger
+               :buffer (prin1-to-string buf)))))
+     ((with-current-buffer buf
+        (not flylint-mode))
+      (with-current-buffer buf
+        (flylint--debug :break t :level :warning 'run-checkers
+          (flylint-p-plist-to-string
+           (list :error-msg "The running checker request was not executed because `flylint-mode' is disabled."
+                 :triger triger
+                 :buffer (prin1-to-string buf)
+                 :checkers flylint-enabled-checkers)))))
+     ((with-current-buffer buf
+        (flylint--running-p))
+      (with-current-buffer buf
+        (flylint--debug :break t :level :warning 'run-checkers
+          (flylint-p-plist-to-string
+           (list :error-msg "The running checker request was not executed because already checker executed."
+                 :triger triger
+                 :buffer (prin1-to-string buf)
+                 :checkers flylint-enabled-checkers)))))
+     ((with-current-buffer buf
+        (not
+         (or (eq 'manual triger)
+             (memq triger flylint-check-syntax-triger))))
+      (with-current-buffer buf
+        (flylint--debug :break t :level :warning 'run-checkers
+          (flylint-p-plist-to-string
+           (list :error-msg "The running checker request was not executed because this triger disabled."
+                 :triger triger
+                 :buffer (prin1-to-string buf)
+                 :checkers flylint-enabled-checkers)))))
+     (t
+       (with-current-buffer buf
+         (flylint--debug :break t 'run-checkers
+           (flylint-p-plist-to-string
+            (list :triger triger
+                  :buffer buf
+                  :checkers flylint-enabled-checkers)))
+         (setq-local flylint-running t)
+         (dolist (elm flylint-enabled-checkers)
+           (flylint--run elm buf))
+         (setq-local flylint-running nil))))))
 
 (defun flylint--handle-save ()
   "Handle a buffer save."
