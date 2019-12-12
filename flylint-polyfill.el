@@ -41,13 +41,18 @@
 
 
 ;;; p
+(defcustom flylint-p-escape-newlines t
+  "Value of `print-escape-newlines' used by p-* functions."
+  :type 'boolean
+  :group 'p)
+
 (defmacro with-p--working-buffer (form &rest body)
   "Insert FORM, execute BODY, return `buffer-string'."
   (declare (indent 1) (debug t))
   `(with-temp-buffer
      (lisp-mode-variables nil)
      (set-syntax-table emacs-lisp-mode-syntax-table)
-     (let ((print-escape-newlines p-escape-newlines)
+     (let ((print-escape-newlines flylint-p-escape-newlines)
            (print-quoted t))
        (prin1 ,form (current-buffer))
        (goto-char (point-min)))
