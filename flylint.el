@@ -551,14 +551,19 @@ Promise will reject when fail display ERRORS."
     (flylint-p-plist-to-string
      (list :checker checker
            :errors errors)))
-  (pcase-dolist (`(,level ,filename ,line ,column ,message ,category) errors)
-    (flylint--add-overlay
-     (flylint-error-new level line column message
-                        :checker checker
-                        :category category
-                        :filename filename
-                        :buffer (get-buffer filename))))
-  (promise-resolve t))
+  (promise-new
+   (lambda (resolve reject)
+     (condition-case err
+         (pcase-dolist (`(,level ,filename ,line ,column ,message ,category) errors)
+           (flylint--add-overlay
+            (flylint-error-new level line column message
+                               :checker checker
+                               :category category
+                               :filename filename
+                               :buffer (get-buffer filename))))
+       (error
+        (funcall reject `(fail-add-overlay ,errors ,err))))
+      (funcall resolve t))))
 
 (async-defun flylint--run (checker buffer)
   "Run CHECKER async for BUFFER."
@@ -595,6 +600,10 @@ Promise will reject when fail display ERRORS."
         (flylint--warn "External program exit normally, and well tokenize, but cannot parse tokens.
   checker: %s\n  tokens: %s  reason: %s"
                        checker (prin1-to-string tokens) (prin1-to-string reason)))
+       (`(error (fail-add-overlay ,errors ,err))
+        (flylint--warn "External program exit normally, and well tokenize/parse, but cannot add overlay.
+  checker: %s\n  errors: %s  reason: %s"
+                       checker (prin1-to-string errors) (prin1-to-string err)))
        (_
         (flylint--warn "Something wrong while running checker.
   checker: %s\n  buffer: %s"
