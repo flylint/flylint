@@ -28,7 +28,7 @@ GIT_HOOKS    := pre-commit
 
 ##################################################
 
-.PHONY: all help test clean
+.PHONY: all git-hook help build test clean
 
 all: git-hook help
 
@@ -63,7 +63,9 @@ help:
 
 ##############################
 
-test: $(ELS:%.el=%.elc)
+build: $(ELS:%.el=%.elc)
+
+test: build
 	cask exec buttercup -L .
 
 clean:
