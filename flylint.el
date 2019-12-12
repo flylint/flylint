@@ -216,6 +216,41 @@ Return directory will added to `flylint-temporaries'."
     (widen)
     (mapc #'delete-overlay (flylint--overlays-in (point-min) (point-max)))))
 
+(defun flylint--display-errors-in-echo-area (errors)
+  "Display the messages of ERRORS.
+
+Concatenate all non-nil messages of ERRORS separated by empty
+lines, and display them with `display-message-or-buffer', which
+shows the messages either in the echo area or in a separate
+buffer, depending on the number of lines.  See Info
+node `(elisp)Displaying Messages' for more information."
+  (when (and errors
+             (not (or cursor-in-echo-area (active-minibuffer-window))))
+    (let ((formatfn (lambda (err)
+                      (let ((filename (flylint-error-filename err))
+                            (errormsg (flylint-error-message err))
+                            (category (flylint-error-category err)))
+                        (concat (when (and filename
+                                           (not (equal filename (buffer-file-name))))
+                                  (format "In \"%s\":\n  "
+                                          (file-relative-name filename default-directory)))
+                                errormsg
+                                (when category
+                                  (format " [%s]" category)))))))
+      (display-message-or-buffer
+       (mapconcat formatfn errors "\n")
+       flylint-error-message-buffer
+       'not-this-window))))
+
+(defun flylint--display-errors-at-point-in-echo-area ()
+  "Display error message at point in echo-area."
+  (promise-chain (promise:delay flylint-display-errors-at-point-in-echo-area-delay)
+    (then
+     (lambda (_res)
+       (when-let (ovs (flylint--overlays-at (point)))
+         (flylint--display-errors-in-echo-area
+          (mapcar (lambda (ov) (overlay-get ov 'flylint-error)) ovs)))))))
+
 
 ;;; Misc functioins
 
@@ -844,8 +879,8 @@ But Flylint-mode is not enabled for
     ;; the focus hooks only work on Emacs 24.4 and upwards, but since undefined
     ;; hooks are perfectly ok we don't need a version guard here.  They'll just
     ;; not work silently.
-    ;; (post-command-hook . flylint-display-error-at-point-soon)
-    ;; (focus-in-hook     . flylint-display-error-at-point-soon)
+    (post-command-hook . flylint--display-errors-at-point-in-echo-area)
+    (focus-in-hook     . flylint--display-errors-at-point-in-echo-area)
     ;; (focus-out-hook    . flylint-cancel-error-display-error-at-point-timer)
     ;; (post-command-hook . flylint-hide-error-buffer)
 

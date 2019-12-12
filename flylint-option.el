@@ -198,6 +198,18 @@ If nil, never check syntax automatically.  In this case, use
               (const :tag "After a new line was inserted" new-line)
               (const :tag "After `flylint-mode' was enabled" mode-enabled)))
 
+(defcustom flylint-display-errors-at-point-in-echo-area-delay 1.0
+  "Delay in seconds before displaying errors at point.
+
+Use floating point numbers to express fractions of seconds."
+  :group 'flylint
+  :type 'number)
+
+(defcustom flylint-error-message-buffer "*Flylint error messages*"
+  "The name of the buffer to show long error messages in."
+  :group 'flylint
+  :type 'string)
+
 (defcustom flylint-temp-prefix "flylint"
   "Prefix for temporary files created by Flylint."
   :group 'flylint
