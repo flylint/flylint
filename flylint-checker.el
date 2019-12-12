@@ -99,8 +99,8 @@
   (let ((body (or (cdr form) '((one-or-more not-newline)))))
     (rx-to-string `(group-n 4 ,@body) t)))
 
-(defun flylint-checker--rx-id (form)
-  "Translate the `(id)' FORM into a regular expression."
+(defun flylint-checker--rx-category (form)
+  "Translate the `(category)' FORM into a regular expression."
   (rx-to-string `(group-n 5 ,@(cdr form)) t))
 
 (defun flylint-checker--rx-to-string (form &optional no-group)
@@ -122,19 +122,19 @@
      message.  If no SEXP is given, use a default body
      of `(one-or-more not-newline)'.
 
-`(id SEXP ...)'
-     matches an error ID.  SEXP describes the ID.
+`(category SEXP ...)'
+     matches an error CATEGORY.  SEXP describes the CATEGORY.
 
 NO-GROUP is passed to `rx-to-string'.
 
 See `rx' for a complete list of all built-in `rx' forms."
   (let ((rx-constituents
          (append
-          `((line . ,(rx-to-string '(group-n 2 (one-or-more digit)) t))
+          `((file-name flylint-checker--rx-file-name 0 nil)
+            (line . ,(rx-to-string '(group-n 2 (one-or-more digit)) t))
             (column . ,(rx-to-string '(group-n 3 (one-or-more digit)) t))
-            (file-name flylint-checker--rx-file-name 0 nil)
             (message flylint-checker--rx-message 0 nil)
-            (id flylint-checker--rx-id 0 nil))
+            (category flylint-checker--rx-category 0 nil))
           rx-constituents nil)))
     (rx-to-string form no-group)))
 
@@ -205,7 +205,7 @@ Requires GCC 4.4 or newer.  See URL `https://gcc.gnu.org/'."
                           ": note: " (message) line-end))
    (warning . (line-start (or "<stdin>" (file-name)) ":" line ":" column
                           ": warning: " (message (one-or-more (not (any "\n["))))
-                          (optional "[" (id (one-or-more not-newline)) "]") line-end))
+                          (optional "[" (category (one-or-more not-newline)) "]") line-end))
    (error   . (line-start (or "<stdin>" (file-name)) ":" line ":" column
                           ": " (or "fatal error" "error") ": " (message) line-end)))
   :modes (c-mode c++-mode))
