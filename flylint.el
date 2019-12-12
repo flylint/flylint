@@ -582,11 +582,9 @@ Promise will reject when fail display ERRORS."
   checker: %s\n  command: %s\n  reason: %s" checker (prin1-to-string cmd) (prin1-to-string reason)))
 
        (`(error (fail-tokenize-nothing ,cmd-res))
-        (let ((exit-code (nth 0 cmd-res))
-              (output    (nth 1 cmd-res)))
-          (flylint--warn "External program returned non-zero, but contained no errors.
+        (flylint--warn "External program returned non-zero, but contained no errors.
   checker: %s\n  exit-code: %s\n  output: %s"
-                         checker exit-code output)))
+                       checker (nth 0 cmd-res) (nth 1 cmd-res)))
 
        (`(error (fail-tokenize-unknown ,reason ,cmd-res))
         (flylint--warn "External program exit normally, but cannot tokenize output.
