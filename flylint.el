@@ -161,7 +161,7 @@ Return directory will added to `flylint-temporaries'."
 
 (defun flylint--overlays-at (pos)
   "Get flylint overlays at POS."
-  (apply #'flylint--add-overlays-in `(,pos ,pos)))
+  (apply #'flylint--overlays-in `(,pos ,pos)))
 
 (defun flylint--remove-all-overlays ()
   "Remove all `flylint' overlays."
