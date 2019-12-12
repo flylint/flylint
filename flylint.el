@@ -126,31 +126,32 @@ Return directory will added to `flylint-temporaries'."
   (if (not (flylint-error-p err))
       (error "`flylint--add-overlay' expects ERR is object of `flylint-error', but passed %s"
              (prin1-to-string err))
-    (let* ((fringe-icon
-            (lambda (level side)
-              (when side
-                (unless (memq side '(left-fringe right-fringe))
-                  (error "Invalid fringe side: %S" side))
-                (propertize "!" 'display
-                            (list side
-                                  'flylint-fringe-double-arrow-bitmap
-                                  (flylint--symbol 'fringe-face level))))))
-           (region (save-excursion
-                     (save-restriction
-                       (widen)
-                       (goto-char (flylint-error-column err))
-                       (bounds-of-thing-at-point
-                        (or flylint-highlight-elements 'symbol)))))
-           (ov     (when region (make-overlay (car region) (cdr region))))
-           (level  (flylint-error-level err)))
-      (when ov
-        (overlay-put ov 'flylint-overlay t)
-        (overlay-put ov 'flylint-error err)
-        (overlay-put ov 'category (flylint--symbol 'ov-category level))
-        (overlay-put ov 'face (when flylint-highlight-elements
-                                (flylint--symbol 'face level)))
-        (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
-        (overlay-put ov 'help-echo (flylint-error-message err))))))
+    (with-current-buffer (or (flylint-error-buffer err) (current-buffer))
+      (let* ((fringe-icon
+              (lambda (level side)
+                (when side
+                  (unless (memq side '(left-fringe right-fringe))
+                    (error "Invalid fringe side: %S" side))
+                  (propertize "!" 'display
+                              (list side
+                                    'flylint-fringe-double-arrow-bitmap
+                                    (flylint--symbol 'fringe-face level))))))
+             (region (save-excursion
+                       (save-restriction
+                         (widen)
+                         (goto-char (flylint-error-column err))
+                         (bounds-of-thing-at-point
+                          (or flylint-highlight-elements 'symbol)))))
+             (ov     (when region (make-overlay (car region) (cdr region))))
+             (level  (flylint-error-level err)))
+        (when ov
+          (overlay-put ov 'flylint-overlay t)
+          (overlay-put ov 'flylint-error err)
+          (overlay-put ov 'category (flylint--symbol 'ov-category level))
+          (overlay-put ov 'face (when flylint-highlight-elements
+                                  (flylint--symbol 'face level)))
+          (overlay-put ov 'before-string (funcall fringe-icon level flylint-indication-fringe))
+          (overlay-put ov 'help-echo (flylint-error-message err)))))))
 
 (defun flylint--overlays-in (beg end)
   "Get all flylint overlays between BEG to END."
