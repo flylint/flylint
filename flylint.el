@@ -547,23 +547,39 @@ ERRORS format is return value `flylint--promise-parse-output'.
 
 Promise will resolve with t if noerror.
 Promise will reject when fail display ERRORS."
-  (flylint--debug 'promise-add-overlay
-    (flylint-p-plist-to-string
-     (list :checker checker
-           :errors errors)))
-  (promise-new
-   (lambda (resolve reject)
-     (condition-case err
-         (pcase-dolist (`(,level ,filename ,line ,column ,message ,category) errors)
-           (flylint--add-overlay
-            (flylint-error-new level line column message
-                               :checker checker
-                               :category category
-                               :filename filename
-                               :buffer (get-buffer filename))))
-       (error
-        (funcall reject `(fail-add-overlay ,errors ,err))))
-      (funcall resolve t))))
+  (let ((safe-string-to-number (lambda (str)
+                                 (let ((number-re
+                                        (rx string-start (+ digit) string-end)))
+                                   (if (and (stringp str)
+                                            (string-match-p number-re str))
+                                       (string-to-number str)
+                                     0))))
+        (safe-get-buffer (lambda (filename)
+                           (if (and filename
+                                    (get-buffer filename))
+                               (get-buffer filename)
+                             (current-buffer)))))
+    (flylint--debug 'promise-add-overlay
+      (flylint-p-plist-to-string
+       (list :checker checker
+             :errors errors)))
+    (promise-new
+     (lambda (resolve reject)
+       (condition-case err
+           (pcase-dolist (`(,level ,filename ,line ,column ,message ,category) errors)
+             (flylint--add-overlay
+              (flylint-error-new
+               level
+               (funcall safe-string-to-number line)
+               (funcall safe-string-to-number column)
+               message
+               :checker checker
+               :category category
+               :filename filename
+               :buffer (funcall safe-get-buffer filename))))
+         (error
+          (funcall reject `(fail-add-overlay ,errors ,err))))
+       (funcall resolve t)))))
 
 (async-defun flylint--run (checker buffer)
   "Run CHECKER async for BUFFER."
