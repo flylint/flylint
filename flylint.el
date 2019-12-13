@@ -769,7 +769,7 @@ see `flylint-check-syntax-triger'."
       (with-current-buffer buf
         (flylint--debug :break t :level :warning 'run-checkers
           (flylint-p-plist-to-string
-           (list :error-msg "The running checker request was not executed because this triger disabled."
+           (list :error-msg "The running checker request was not executed because this triger is disabled."
                  :triger triger
                  :buffer (prin1-to-string buf)
                  :checkers flylint-enabled-checkers)))))
