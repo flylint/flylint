@@ -692,7 +692,7 @@ Promise will reject when fail display ERRORS."
   (flylint--debug 'run-checker
     (flylint-p-plist-to-string
      (list :checker checker
-           :buffer buffer)))
+           :buffer (prin1-to-string buffer))))
   (condition-case err
       (let* ((res (await (flylint--promise-get-checker checker)))
              (res (await (flylint--promise-exec-command checker buffer)))
