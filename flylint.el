@@ -689,7 +689,7 @@ Promise will reject when fail display ERRORS."
 
 (async-defun flylint--run-checker (checker buffer)
   "Run CHECKER async for BUFFER."
-  (flylint--debug 'run
+  (flylint--debug 'run-checker
     (flylint-p-plist-to-string
      (list :checker checker
            :buffer buffer)))
