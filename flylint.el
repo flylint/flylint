@@ -743,7 +743,7 @@ see `flylint-check-syntax-triger'."
         (flylint-p-plist-to-string
          (list :error-msg "The running checker request was not executed because target buffer is missing."
                :triger triger
-               :buffer (prin1-to-string buf)))))
+               :buffer (prin1-to-string (or buffer (current-buffer)))))))
      ((with-current-buffer buf
         (not flylint-mode))
       (with-current-buffer buf
